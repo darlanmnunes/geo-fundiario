@@ -81,4 +81,4 @@ O fluxo `.github/workflows/pages.yml` publica a interface como site estático no
 
 ## Licença
 
-A definir antes da primeira publicação.
+Código sob a **GNU Affero General Public License v3.0 ou posterior** ([LICENSE](LICENSE)). Quem usar ou oferecer o sistema como serviço, inclusive modificado, disponibiliza o código correspondente nos mesmos termos. Material didático e documentação de apoio terão licença própria, indicada em cada arquivo quando publicados.

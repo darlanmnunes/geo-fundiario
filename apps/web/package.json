@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "reurb-livre-web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -27,5 +27,6 @@
     "eslint-config-next": "16.4.4",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "license": "AGPL-3.0-or-later"
 }

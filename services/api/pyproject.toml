@@ -2,6 +2,7 @@
 name = "reurb-api"
 version = "0.1.0"
 description = "API do REURB Livre (FastAPI + PostGIS)"
+license = "AGPL-3.0-or-later"
 authors = [
     { name = "darlanmnunes", email = "45981692+darlanmnunes@users.noreply.github.com" }
 ]
