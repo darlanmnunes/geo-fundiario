@@ -1,0 +1,138 @@
+@import "tailwindcss";
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+/*
+  Identidade: caderneta de campo + documento técnico.
+  Papel quente como fundo, tinta quase preta, terracota como cor de ação,
+  serifa com personalidade nos títulos e números, mono para códigos e coordenadas.
+*/
+@theme inline {
+  --font-sans: var(--font-plex-sans), system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), Georgia, serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --color-papel-50: #fbf9f4;
+  --color-papel-100: #f4f1e8;
+  --color-papel-200: #e9e4d6;
+  --color-papel-300: #d9d2bf;
+
+  --color-tinta-900: #1b1a17;
+  --color-tinta-700: #3a3833;
+  --color-tinta-500: #6b675e;
+  --color-tinta-300: #a39e92;
+
+  --color-terra-700: #8f3f1f;
+  --color-terra-600: #b4532a;
+  --color-terra-500: #c9693f;
+  --color-terra-100: #f6e4da;
+
+  --color-oliva-700: #4c5a2a;
+  --color-oliva-600: #5f6b3a;
+  --color-oliva-100: #e7ebd8;
+
+  --color-ocre-700: #8c5f0f;
+  --color-ocre-600: #c78b1f;
+  --color-ocre-100: #f7ead0;
+
+  --color-registro-700: #233f66;
+  --color-registro-600: #2d4f7c;
+  --color-registro-100: #dde6f1;
+
+  --color-carimbo-600: #a23b2f;
+  --color-carimbo-100: #f5dcd8;
+}
+
+:root {
+  color-scheme: light;
+  --linha: color-mix(in oklab, var(--color-tinta-900) 12%, transparent);
+  --linha-forte: color-mix(in oklab, var(--color-tinta-900) 28%, transparent);
+}
+
+html {
+  background: var(--color-papel-100);
+}
+
+body {
+  background: var(--color-papel-100);
+  color: var(--color-tinta-900);
+  font-feature-settings: "ss01", "cv05";
+}
+
+h1, h2, h3, .serif {
+  font-family: var(--font-serif);
+  font-variation-settings: "opsz" 48, "SOFT" 30, "WONK" 0;
+  letter-spacing: -0.01em;
+}
+
+.mono, .tab {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.tab { font-family: var(--font-sans); }
+
+/* Rótulo técnico: pequeno, espaçado, em versalete */
+.rotulo {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-tinta-500);
+}
+
+/* Carimbo: situação com borda fina, como num processo físico */
+.carimbo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 1px 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* Painel: superfície branca com fio, sem sombra pesada */
+.painel {
+  background: #fffdf8;
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+}
+.painel > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--linha);
+}
+
+.fio { border-color: var(--linha); }
+.fio-forte { border-color: var(--linha-forte); }
+
+/* Grade milimetrada discreta para áreas vazias do mapa e fundos */
+.milimetrado {
+  background-image:
+    linear-gradient(var(--linha) 1px, transparent 1px),
+    linear-gradient(90deg, var(--linha) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.maplibregl-popup-content {
+  border-radius: 4px;
+  padding: 8px 10px;
+  box-shadow: 0 6px 20px rgb(27 26 23 / 0.18);
+  font-family: var(--font-plex-sans);
+  font-size: 12px;
+}
+.maplibregl-ctrl-group { border-radius: 4px; box-shadow: 0 1px 2px rgb(27 26 23 / .2); }
+.maplibregl-ctrl-scale { font-family: var(--font-plex-mono); font-size: 10px; background: rgb(255 253 248 / .85); border-color: var(--color-tinta-700); }
+
+::selection { background: var(--color-terra-100); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .surgir { animation: surgir 240ms ease-out both; }
+  @keyframes surgir { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: none } }
+}

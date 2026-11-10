@@ -1,0 +1,22 @@
+# Node / Next
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+apps/web/public/maplibre/
+
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Arquivos enviados (ficam fora do repositório)
+services/api/var/
+
+# Ambiente local
+.env
+.env.*
+!.env.example
+.DS_Store
