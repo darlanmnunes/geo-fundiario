@@ -1,4 +1,4 @@
--- REURB Livre — extensões e esquemas
+-- Geo-Fundiário — extensões e esquemas
 -- Convenção de SRID:
 --   * geometrias canônicas em SIRGAS 2000 geográfico (EPSG:4674);
 --   * cálculos métricos (área, azimute, distância) via ST_Transform para o UTM

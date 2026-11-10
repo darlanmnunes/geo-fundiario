@@ -10,8 +10,8 @@ const plexMono = IBM_Plex_Mono({ variable: "--font-plex-mono", subsets: ["latin"
 const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"], axes: ["opsz", "SOFT", "WONK"] });
 
 export const metadata: Metadata = {
-  title: { default: "REURB Livre", template: "%s · REURB Livre" },
-  description: "Plataforma aberta para regularização fundiária urbana — do levantamento de campo ao registro.",
+  title: { default: "Geo-Fundiário", template: "%s · Geo-Fundiário" },
+  description: "Plataforma aberta de gestão fundiária e territorial — do levantamento de campo ao registro.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

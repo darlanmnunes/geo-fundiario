@@ -1,4 +1,4 @@
-"""API REURB Livre — FastAPI sobre PostgreSQL/PostGIS (esquemas ladm, reurb, campo)."""
+"""API Geo-Fundiário — FastAPI sobre PostgreSQL/PostGIS (esquemas ladm, reurb, campo)."""
 
 from __future__ import annotations
 
@@ -11,9 +11,9 @@ from fastapi.responses import PlainTextResponse
 from shapely import wkb
 from shapely.geometry import Point
 
-from reurb_api import documentos
-from reurb_api.banco import cfg, consulta, pool
-from reurb_api.geodesia import Vertice, memorial_descritivo
+from geo_fundiario import documentos
+from geo_fundiario.banco import cfg, consulta, pool
+from geo_fundiario.geodesia import Vertice, memorial_descritivo
 
 
 @asynccontextmanager
@@ -23,7 +23,7 @@ async def lifespan(_: FastAPI):
     pool.close()
 
 
-app = FastAPI(title="REURB Livre API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Geo-Fundiário API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware, allow_origins=cfg.cors_origins.split(","), allow_methods=["GET", "POST"], allow_headers=["*"]
 )
@@ -202,7 +202,7 @@ def exportacao_registro(projeto_id: int):
         projeto_id,
     )
     return {
-        "formato": "reurb-livre/registro@0.1 (esboço)",
+        "formato": "geo-fundiario/reurb-registro@0.1 (esboço)",
         "nucleo": p["nome"],
         "localizacao": f"{p['municipio_nome']}/{p['uf']} (IBGE {p['municipio_ibge']})",
         "modalidade": p["modalidade"],

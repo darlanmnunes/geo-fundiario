@@ -1,10 +1,18 @@
-# REURB Livre
+# Geo-Fundiário
 
-Plataforma aberta para **Regularização Fundiária Urbana (REURB)**: do levantamento de campo às peças técnicas, da notificação ao registro. Código livre, da estrutura do banco à interface.
+Plataforma aberta de **gestão fundiária e territorial**: do levantamento de campo às peças técnicas, do cadastro ao registro. Código livre, da estrutura do banco à interface.
+
+O primeiro módulo é a **Regularização Fundiária Urbana (REURB)**, conforme a Lei 13.465/2017. O núcleo cadastral (LADM, ISO 19152), a geodésia, os documentos e a inteligência territorial são compartilhados e servem de base para os próximos módulos.
 
 > Estado: **protótipo funcional**. Todos os dados de demonstração são fictícios (dois núcleos em Viçosa-MG, gerados por script).
 
-## O que o sistema faz hoje
+| Módulo | Situação |
+|---|---|
+| REURB — regularização fundiária urbana | protótipo funcional |
+| Inteligência territorial — dossiê de áreas a partir de camadas públicas | protótipo com dados simulados |
+| Cadastro territorial multifinalitário, regularização rural, georreferenciamento de imóveis | planejados |
+
+## O que o módulo REURB faz hoje
 
 | Área | Capacidade |
 |---|---|
@@ -42,15 +50,15 @@ Pré-requisitos: Node 20+, [uv](https://docs.astral.sh/uv/), PostgreSQL 14+ com 
 
 ```bash
 # 1. Banco
-createdb reurb_livre
-for f in db/migrations/*.sql; do psql -d reurb_livre -v ON_ERROR_STOP=1 -f "$f"; done
+createdb geo_fundiario
+for f in db/migrations/*.sql; do psql -d geo_fundiario -v ON_ERROR_STOP=1 -f "$f"; done
 
 # 2. Dados de demonstração (gera db/seed/seed.sql e apps/web/src/data/seed.json)
 (cd services/api && uv run python scripts/gerar_seed.py)
-psql -d reurb_livre -f db/seed/seed.sql
+psql -d geo_fundiario -f db/seed/seed.sql
 
 # 3. API — http://localhost:8000/docs
-(cd services/api && uv run uvicorn reurb_api.main:app --reload --port 8000)
+(cd services/api && uv run uvicorn geo_fundiario.main:app --reload --port 8000)
 
 # 4. Interface — http://localhost:3000
 (cd apps/web && npm install && npm run dev)
@@ -62,7 +70,7 @@ Verificação:
 
 ```bash
 (cd services/api && uv run pytest && uv run ruff check src tests scripts)
-(cd apps/web && npx tsc --noEmit && npm run lint && npm run build)
+(cd apps/web && npm run typecheck && npm run lint && npm run build)
 ```
 
 ## Demonstração pública

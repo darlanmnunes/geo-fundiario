@@ -1,6 +1,6 @@
 """Documentos: upload com endereçamento por conteúdo (SHA-256), download e verificação pública.
 
-Os bytes ficam fora do banco: por padrão em REURB_ARQUIVOS_DIR (sistema de arquivos),
+Os bytes ficam fora do banco: por padrão em GEOF_ARQUIVOS_DIR (sistema de arquivos),
 em caminho 2026/ab/<sha256>. Trocar por S3/MinIO é trocar esta classe de armazenamento.
 """
 
@@ -15,7 +15,7 @@ from typing import Annotated
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
-from reurb_api.banco import consulta, pool
+from geo_fundiario.banco import consulta, pool
 
 router = APIRouter(tags=["documentos"])
 
@@ -42,7 +42,7 @@ class ArmazenamentoLocal:
 
 
 def armazenamento() -> ArmazenamentoLocal:
-    from reurb_api.banco import cfg
+    from geo_fundiario.banco import cfg
 
     return ArmazenamentoLocal(Path(cfg.arquivos_dir))
 

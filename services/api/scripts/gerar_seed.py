@@ -21,7 +21,7 @@ from shapely.geometry import LineString, MultiPolygon, Point, Polygon, mapping
 from shapely.geometry.polygon import orient
 from shapely.ops import unary_union
 
-from reurb_api.geodesia import Vertice, area_shoelace, memorial_descritivo, segmentos
+from geo_fundiario.geodesia import Vertice, area_shoelace, memorial_descritivo, segmentos
 
 RAIZ = Path(__file__).resolve().parents[3]
 SRID_UTM = 31983  # SIRGAS 2000 / UTM 23S

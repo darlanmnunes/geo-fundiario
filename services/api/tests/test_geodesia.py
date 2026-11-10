@@ -1,4 +1,4 @@
-from reurb_api.geodesia import Vertice, area_shoelace, azimute, gms, memorial_descritivo, meridiano_central
+from geo_fundiario.geodesia import Vertice, area_shoelace, azimute, gms, memorial_descritivo, meridiano_central
 
 
 def test_azimutes_cardeais():

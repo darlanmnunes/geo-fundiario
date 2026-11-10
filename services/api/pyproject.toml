@@ -1,7 +1,7 @@
 [project]
-name = "reurb-api"
+name = "geo-fundiario-api"
 version = "0.1.0"
-description = "API do REURB Livre (FastAPI + PostGIS)"
+description = "API do Geo-Fundiário, plataforma aberta de gestão fundiária e territorial (FastAPI + PostGIS)"
 license = "AGPL-3.0-or-later"
 authors = [
     { name = "darlanmnunes", email = "45981692+darlanmnunes@users.noreply.github.com" }
@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-reurb-api = "reurb_api:main"
+geo-fundiario-api = "geo_fundiario:main"
 
 [build-system]
 requires = ["uv_build>=0.13.5,<0.14.0"]
@@ -38,3 +38,6 @@ line-length = 120
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
 ignore = ["E501", "B905"]
+
+[tool.uv.build-backend]
+module-name = "geo_fundiario"

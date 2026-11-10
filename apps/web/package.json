@@ -1,5 +1,5 @@
 {
-  "name": "reurb-livre-web",
+  "name": "geo-fundiario-web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "node scripts/copiar-worker-maplibre.mjs"
+    "postinstall": "node scripts/copiar-worker-maplibre.mjs",
+    "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
     "clsx": "^2.1.1",

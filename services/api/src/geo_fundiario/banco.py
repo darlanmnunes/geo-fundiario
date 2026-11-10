@@ -8,11 +8,11 @@ from pydantic_settings import BaseSettings
 
 
 class Config(BaseSettings):
-    database_url: str = "postgresql://localhost/reurb_livre"
+    database_url: str = "postgresql://localhost/geo_fundiario"
     cors_origins: str = "http://localhost:3000"
     arquivos_dir: str = "var/arquivos"
 
-    model_config = {"env_prefix": "REURB_"}
+    model_config = {"env_prefix": "GEOF_"}
 
 
 cfg = Config()

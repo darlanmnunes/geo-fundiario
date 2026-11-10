@@ -12,14 +12,14 @@ interface Props {
 
 function Marca() {
   return (
-    <Link href="/" className="flex items-center gap-2.5" aria-label="REURB Livre — início">
+    <Link href="/" className="flex items-center gap-2.5" aria-label="Geo-Fundiário — início">
       {/* Marca: um lote visto de cima com o vértice marcado, traço de caderneta */}
       <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true" className="text-papel-50">
         <path d="M4 7.5 L19 4 L22 19.5 L7 22 Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
         <path d="M4 7.5 L22 19.5" stroke="currentColor" strokeWidth="0.9" strokeDasharray="1.5 2.2" />
         <circle cx="19" cy="4" r="2.4" fill="#c9693f" />
       </svg>
-      <span className="serif text-[17px] leading-none tracking-tight whitespace-nowrap text-papel-50">REURB Livre</span>
+      <span className="serif text-[17px] leading-none tracking-tight whitespace-nowrap text-papel-50">Geo-Fundiário</span>
     </Link>
   );
 }
@@ -27,7 +27,7 @@ function Marca() {
 export function BarraSuperior({ projetos }: Props) {
   const caminho = usePathname();
   const projetoAtual = projetos.find((p) => caminho.startsWith(`/projetos/${p.id}`));
-  const abrirPaleta = () => window.dispatchEvent(new CustomEvent("reurb:paleta"));
+  const abrirPaleta = () => window.dispatchEvent(new CustomEvent("geof:paleta"));
 
   const link = (href: string, ativo: boolean, texto: string) => (
     <Link

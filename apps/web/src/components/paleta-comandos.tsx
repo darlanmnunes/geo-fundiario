@@ -46,10 +46,10 @@ export function PaletaComandos({ itens }: { itens: ItemBusca[] }) {
       setAberta(true);
     };
     window.addEventListener("keydown", tecla);
-    window.addEventListener("reurb:paleta", abrir);
+    window.addEventListener("geof:paleta", abrir);
     return () => {
       window.removeEventListener("keydown", tecla);
-      window.removeEventListener("reurb:paleta", abrir);
+      window.removeEventListener("geof:paleta", abrir);
     };
   }, []);
 
