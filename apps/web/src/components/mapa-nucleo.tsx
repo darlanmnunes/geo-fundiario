@@ -93,14 +93,23 @@ export function MapaNucleo({ perimetro, quadras, logradouros, lotes, destaque, s
     if (!div.current) return;
     maplibregl.setWorkerUrl(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/maplibre/maplibre-gl-worker.mjs`);
     const alvo = destaque ? { type: "FeatureCollection" as const, features: lotes.features.filter((f) => f.properties.codigo === destaque) } : perimetro;
+    const enquadramento = { padding: destaque ? 90 : 36, maxZoom: 19 };
     const m = new maplibregl.Map({
       container: div.current,
       style: estilo(base),
       bounds: limites(alvo),
-      fitBoundsOptions: { padding: destaque ? 90 : 36, maxZoom: 19 },
+      fitBoundsOptions: enquadramento,
       attributionControl: { compact: true },
       maxZoom: 21,
     });
+    // O contêiner pode mudar de tamanho depois de criado (layout ainda assentando): reenquadra.
+    const reenquadrar = () => {
+      m.resize();
+      m.fitBounds(limites(alvo), { ...enquadramento, duration: 0 });
+    };
+    m.once("load", reenquadrar);
+    const observador = new ResizeObserver(() => m.resize());
+    observador.observe(div.current);
     m.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), "top-right");
     m.addControl(new maplibregl.ScaleControl({ unit: "metric", maxWidth: 120 }), "bottom-left");
     const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 8 });
@@ -165,6 +174,7 @@ export function MapaNucleo({ perimetro, quadras, logradouros, lotes, destaque, s
     m.on("mouseout", () => setCursor(null));
     mapa.current = m;
     return () => {
+      observador.disconnect();
       popup.remove();
       m.remove();
       mapa.current = null;
