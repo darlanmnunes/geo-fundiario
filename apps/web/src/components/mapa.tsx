@@ -120,6 +120,8 @@ export function Mapa({ camadas, destaque, selecionado, aoSelecionar, situacoes, 
     callback.current = aoSelecionar;
   });
 
+  const alvoAtual = useRef<() => GJ>(() => camadas.perimetros);
+
   const temApp = camadas.faixaApp.features.length > 0 || camadas.hidrografia.features.length > 0;
 
   useEffect(() => {
@@ -132,6 +134,7 @@ export function Mapa({ camadas, destaque, selecionado, aoSelecionar, situacoes, 
       return c.perimetros;
     };
     const enquadramento = { padding: destaque ? 80 : 40, maxZoom: 19.5 };
+    alvoAtual.current = alvoInicial;
     const m = new maplibregl.Map({
       container: div.current,
       style: estilo(estado.current.base),
@@ -213,7 +216,17 @@ export function Mapa({ camadas, destaque, selecionado, aoSelecionar, situacoes, 
       m.resize();
       m.fitBounds(limites(alvoInicial()), { ...enquadramento, duration: 0 });
     });
-    const observador = new ResizeObserver(() => m.resize());
+    // Até a pessoa mexer no mapa, toda mudança de tamanho do contêiner reenquadra o alvo inteiro.
+    let mexeu = false;
+    const marcar = (e: { originalEvent?: unknown }) => { if (e.originalEvent) mexeu = true; };
+    m.on("dragstart", marcar);
+    m.on("zoomstart", marcar);
+    const observador = new ResizeObserver(() => {
+      m.resize();
+      if (mexeu) return;
+      const b = limites(alvoAtual.current());
+      if (!b.isEmpty()) m.fitBounds(b, { ...enquadramento, duration: 0 });
+    });
     observador.observe(div.current);
 
     if (!destaque) {
@@ -312,6 +325,7 @@ export function Mapa({ camadas, destaque, selecionado, aoSelecionar, situacoes, 
     if (!m || focoAplicado.current === foco) return;
     focoAplicado.current = foco;
     const alvo: GJ = foco == null ? camadas.perimetros : { type: "FeatureCollection", features: camadas.perimetros.features.filter((f) => f.properties?.projeto === foco) };
+    alvoAtual.current = () => alvo;
     const b = limites(alvo);
     if (!b.isEmpty()) m.fitBounds(b, { padding: 40, maxZoom: 19, duration: 500 });
   }, [foco, camadas]);

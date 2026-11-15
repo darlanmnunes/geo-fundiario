@@ -24,6 +24,10 @@ const CSP = [
   "form-action 'self'",
 ].join("; ");
 
+// Impede que o sistema seja exibido dentro de outra página (clickjacking). No servidor Next o bloqueio é por
+// cabeçalho (next.config.ts); no site estático, que não envia cabeçalhos próprios, é este trecho.
+const ANTI_MOLDURA = "if(self!==top){try{top.location.replace(self.location.href)}catch(e){document.documentElement.style.display='none'}}";
+
 export const metadata: Metadata = {
   title: { default: "Geo-Fundiário", template: "%s - Geo-Fundiário" },
   description: "Plataforma aberta de gestão fundiária e territorial: do levantamento de campo ao registro.",
@@ -36,6 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="pt-BR" className={`${texto.variable} ${codigo.variable} h-full antialiased`}>
       <head>
         <meta httpEquiv="Content-Security-Policy" content={CSP} />
+        {!DEV && <script dangerouslySetInnerHTML={{ __html: ANTI_MOLDURA }} />}
       </head>
       <body className="flex min-h-full flex-col font-sans text-[14px]">
         <a href="#conteudo" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-superficie focus:px-3 focus:py-2 focus:text-azul">Ir para o conteúdo</a>

@@ -1,50 +1,113 @@
-# Geo-Fundiário
+<h1 align="center">Geo-Fundiário</h1>
 
-Plataforma aberta de **gestão fundiária e territorial**: do levantamento de campo às peças técnicas, do cadastro ao registro. Código livre, da estrutura do banco à interface.
+<p align="center">
+  Plataforma aberta de <strong>gestão fundiária e territorial</strong>:<br>
+  do levantamento de campo às peças técnicas, do cadastro ao registro.
+</p>
 
-O primeiro módulo é a **Regularização Fundiária Urbana (REURB)**, conforme a Lei 13.465/2017. O núcleo cadastral (LADM, ISO 19152), a geodésia, os documentos e a inteligência territorial são compartilhados e servem de base para os próximos módulos.
+<p align="center">
+  <a href="https://darlanmnunes.github.io/geo-fundiario/"><strong>Abrir a demonstração</strong></a>
+  &nbsp;|&nbsp;
+  <a href="docs/marco-legal-e-fluxo-reurb.md">Marco legal</a>
+  &nbsp;|&nbsp;
+  <a href="docs/seguranca.md">Segurança</a>
+  &nbsp;|&nbsp;
+  <a href="#como-rodar">Como rodar</a>
+</p>
 
-> Estado: **protótipo funcional**. Os dados de demonstração são fictícios: três núcleos simulados sobre edificações do campus da UFV (geometria do OpenStreetMap, ODbL). Nenhum desses prédios está em regularização.
->
-> Desenvolvido pelo GPGeoIA - Grupo de Pesquisa em Inteligência Artificial Geoespacial da UFV. Responsável: Prof. Dr. Darlan Miranda Nunes.
+<p align="center">
+  <a href="https://github.com/darlanmnunes/geo-fundiario/actions/workflows/ci.yml"><img alt="Verificação" src="https://github.com/darlanmnunes/geo-fundiario/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/darlanmnunes/geo-fundiario/actions/workflows/pages.yml"><img alt="Demonstração" src="https://github.com/darlanmnunes/geo-fundiario/actions/workflows/pages.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="Licença AGPL-3.0-or-later" src="https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0--or--later-1351b4"></a>
+  <img alt="Modelo LADM ISO 19152" src="https://img.shields.io/badge/modelo-LADM%20ISO%2019152-0b2f66">
+  <img alt="SIRGAS 2000" src="https://img.shields.io/badge/refer%C3%AAncia-SIRGAS%202000-0b2f66">
+</p>
 
-| Módulo | Situação |
+<p align="center">
+  <a href="https://darlanmnunes.github.io/geo-fundiario/"><img src="docs/img/visao-geral.jpg" alt="Visão geral: indicadores, mapa dos núcleos, unidades por situação e o que exige decisão" width="920"></a>
+</p>
+
+O primeiro módulo é a **Regularização Fundiária Urbana (REURB)**, conforme a Lei 13.465/2017 e o Decreto 9.310/2018. O núcleo cadastral, a geodésia, os documentos e a inteligência territorial são compartilhados e servem de base para os próximos módulos. O código é livre, da estrutura do banco à interface.
+
+> [!NOTE]
+> **Protótipo funcional com dados fictícios.** Os três núcleos da demonstração foram simulados sobre edificações do campus da UFV (geometria do OpenStreetMap, ODbL). Nenhum desses prédios está em regularização e nenhuma pessoa citada existe.
+
+## Sumário
+
+- [O que o sistema faz](#o-que-o-sistema-faz)
+- [Telas](#telas)
+- [Arquitetura](#arquitetura)
+- [Como rodar](#como-rodar)
+- [Demonstração pública](#demonstração-pública)
+- [Situação e próximos passos](#situação-e-próximos-passos)
+- [Autoria](#autoria)
+- [Licença](#licença)
+
+## O que o sistema faz
+
+| Área | O que entrega |
 |---|---|
-| REURB — regularização fundiária urbana | protótipo funcional |
-| Inteligência territorial — dossiê de áreas a partir de camadas públicas | protótipo com dados simulados |
-| Cadastro territorial multifinalitário, regularização rural, georreferenciamento de imóveis | planejados |
+| **Visão geral** | Painel do gestor: indicadores, mapa de todos os núcleos, unidades por situação, andamento das dez fases e a lista do que exige decisão. Os gráficos filtram o painel e o mapa. |
+| **Núcleo** | Mapa com imagem, unidades coloridas por situação, trilha das fases do art. 28 com prazos e entregas, inspetor da unidade. |
+| **Cadastro** | Unidades e ocupantes com renda, família, CPF mascarado e documentos faltantes; perfil socioeconômico do núcleo. |
+| **Ficha da unidade** | Vértices com método e erro posicional, azimutes e distâncias, confrontantes por topologia, critérios de legitimação fundiária (art. 23) e documentos do ocupante. |
+| **Peças técnicas** | Memorial descritivo em DOCX, planta em A3 com malha e selo, DXF e GeoPackage do núcleo, todos gerados dos vértices. |
+| **Levantamento** | Controle de qualidade por vértice contra a tolerância da norma do projeto: 8 cm tridimensional na REURB (Dec. 9.310/2018, art. 29) ou os limites planimétricos do georreferenciamento rural. |
+| **Notificações** | Art. 31: destinatário, meio, ciência, prazo de 30 dias e resposta. |
+| **Documentos** | Autos do processo por fase, com código de verificação pública e assinaturas. |
+| **Inteligência territorial** | Dossiê de cada núcleo por tema (APP, risco, marco temporal, matrículas, unidades de conservação e outros), com base legal e fonte em cada achado. |
+| **Base legal** | As dez fases com os artigos que as regem e link para o texto de cada lei e norma. |
+| **Acesso** | Login por perfil (leitor, editor, administrador); cada gravação fica na auditoria com o autor. |
+| **Assistente IA** | Estrutura para perguntas em linguagem natural ao banco, por um papel somente leitura sobre visões sem dado pessoal. |
 
-## O que o módulo REURB faz hoje
+## Telas
 
-| Área | Capacidade |
+| Núcleo: mapa e processo | Inteligência territorial |
 |---|---|
-| **Mesa de trabalho** | Todos os núcleos com a trilha das dez fases, lotes por situação e o que exige decisão hoje: prazos legais, impugnações, assinaturas pendentes |
-| **Mapa e processo** | Workspace com ortofoto, lotes coloridos por situação, filtro por situação, inspetor do lote, navegação por teclado, fases do art. 28 com prazos e documentos de cada fase |
-| **Cadastro** | Lotes e ocupantes com renda, família, CPF (mascarado), documentos faltantes; perfil socioeconômico (renda, idade, escolaridade, ocupação) |
-| **Ficha do lote** | Vértices com método e erro posicional, azimutes e distâncias, confrontantes por topologia, critérios de legitimação fundiária (art. 23), documentos do ocupante e **memorial descritivo gerado dos vértices** |
-| **Levantamento** | Controle de qualidade: erro esférico por vértice contra o limite de 8 cm (Dec. 9.310/2018, art. 29), histograma e lista do que precisa ser remedido |
-| **Notificações** | Art. 31: destinatário, meio (AR, edital), ciência, prazo de 30 dias e resposta |
-| **Documentos e peças** | Autos do processo por fase, com código de verificação pública e assinaturas (ICP-Brasil / gov.br); situação das peças do art. 35 |
-| **Inteligência territorial** | Dossiê de uma área cruzando camadas públicas (marco temporal, APP, risco, censo, zoneamento, matrículas, CAR, SIGEF, UC/TI, infraestrutura), cada achado com severidade e base legal — achados simulados nesta versão |
-| **Busca (⌘K)** | Lotes, ocupantes, fases, documentos e páginas |
+| ![Mapa do núcleo com a trilha das fases](docs/img/nucleo.jpg) | ![Dossiê territorial com achados, base legal e fonte](docs/img/inteligencia.jpg) |
+
+<p align="center">
+  <img src="docs/img/planta.jpg" alt="Planta da unidade em A3 com malha de coordenadas, convenções, tabela de vértices e selo" width="820"><br>
+  <sub>Planta da unidade em A3, gerada dos vértices do banco.</sub>
+</p>
 
 ## Arquitetura
 
-```
-apps/web  (Next.js 16, React 19, Tailwind 4, MapLibre)  ──►  services/api (FastAPI, Python 3.12)  ──►  PostgreSQL + PostGIS
-  páginas estáticas + seed offline                             memorial, qualidade, documentos,          ladm.*        ISO 19152
-  base vetorial OpenFreeMap / imagens Esri                      verificação pública, exportação           reurb.*       Lei 13.465/2017
-                                                                arquivos em disco ou S3 (por SHA-256)     campo.*       levantamento e cadastro social
-                                                                                                          documentos.*  anexos, versões, assinaturas
-                                                                                                          inteligencia.* fontes, dossiês, achados
-                                                                                                          auditoria.*   toda alteração
+```mermaid
+flowchart LR
+  web["<b>apps/web</b><br>Next.js, React, Tailwind, MapLibre"]
+  api["<b>services/api</b><br>FastAPI, Python 3.12"]
+  bd[("<b>PostgreSQL + PostGIS</b><br>geo_fundiario")]
+  arq[["Arquivos por SHA-256<br>disco ou S3"]]
+  fontes(["Fontes públicas<br>conectores"])
+  web -- "leitura, login, edição" --> api
+  api --> bd
+  api --> arq
+  api -. "diagnóstico territorial" .-> fontes
+  bd -. "instantâneo JSON + GeoPackage" .-> web
 ```
 
+O banco é a única fonte de dados. A demonstração estática lê um instantâneo exportado dele; a instalação completa lê a API.
+
+| Esquema | Conteúdo |
+|---|---|
+| `ladm` | Núcleo cadastral ISO 19152: partes, unidades administrativas, direitos, restrições e responsabilidades, unidades espaciais, vértices com método e precisão |
+| `reurb` | Projetos, fases com prazos legais, situação das unidades, pendências, notificações (Lei 13.465/2017) |
+| `campo` | Levantamento e cadastro social |
+| `documentos` | Anexos, versões, assinaturas e código de verificação |
+| `inteligencia` | Catálogo de camadas, conectores, dossiês e achados |
+| `metadados` | Conjuntos de dados no Perfil MGB 2.0 e correspondência com a INDE |
+| `acesso` | Usuários, perfis e sessões |
+| `consulta` | Visões somente leitura, sem dado pessoal, para o Assistente IA |
+| `auditoria` | Registro imutável de toda alteração, com autor |
+
 Decisões de modelagem:
-- **Núcleo cadastral em LADM (ISO 19152)**: pessoas, unidades administrativas básicas, direitos/restrições/responsabilidades, unidades espaciais e vértices com precisão e método. Versionamento temporal: nada é sobrescrito.
-- **Geometria canônica em SIRGAS 2000 geográfico (EPSG:4674)**; área, perímetro, azimutes e distâncias calculados no UTM do projeto (`reurb.projeto.srid_utm`).
-- **Documentos**: metadados e vínculos no PostgreSQL (`jsonb` para o que é flexível, `tsvector` para busca), bytes fora do banco endereçados pelo SHA-256 (disco agora, S3/MinIO depois). Cada documento tem código de verificação pública; assinaturas ficam em tabela própria. Não há segundo banco.
-- **Fases com prazos legais** modeladas como catálogo (`reurb.fase`), não como etapas livres.
+
+- **LADM (ISO 19152)** no núcleo cadastral, com versionamento temporal: nada é sobrescrito.
+- **SIRGAS 2000 geográfico (EPSG:4674)** como geometria canônica. Áreas, azimutes e distâncias saem no plano UTM do projeto; a área no plano topográfico local é calculada à parte.
+- **Tolerância posicional pela norma do projeto**, cadastrada em catálogo, e não um valor fixo.
+- **Documentos**: metadados no PostgreSQL, bytes fora do banco endereçados por SHA-256. Não há segundo banco.
+- **Segurança**: papéis separados no banco, segurança por linha, limites por cliente na API. Detalhes em [docs/seguranca.md](docs/seguranca.md).
 
 ## Como rodar
 
@@ -87,18 +150,31 @@ Segurança, perfis de acesso e passos para produção: [docs/seguranca.md](docs/
 
 ## Demonstração pública
 
-O fluxo `.github/workflows/pages.yml` publica a interface como site estático, somente de leitura, no GitHub Pages a cada push em `main` (`NEXT_OUTPUT=export`). Ative **Settings → Pages → Source: GitHub Actions** no repositório. Para gerar localmente: `NEXT_OUTPUT=export NEXT_BASE_PATH=/<nome-do-repo> npm run build` em `apps/web` (saída em `out/`).
+A cada push em `main`, o fluxo `.github/workflows/pages.yml` publica a interface como site estático, somente de leitura, em <https://darlanmnunes.github.io/geo-fundiario/>. Login, edição, envio de documentos e consulta ao vivo às fontes só existem na instalação com a API.
 
-## Próximos passos
+Para gerar o site localmente: `NEXT_OUTPUT=export NEXT_BASE_PATH=/<nome-do-repo> npm run build` em `apps/web` (saída em `out/`).
 
-1. Interface lendo a API (hoje lê o seed) e formulários de edição com trilha de auditoria visível.
-2. Importação de levantamentos (CSV GNSS/estação total, shapefile, GeoPackage, DXF) e fotos de fachada com coordenadas.
-3. Emissão de peças em PDF/DOCX com QR de verificação: memoriais, planta, CRF, listagem de ocupantes, notificações, edital.
-4. Inteligência territorial com camadas reais (WFS/arquivos) e desenho livre de áreas.
-5. App de campo offline (PWA) para cadastro socioeconômico e coleta.
+## Situação e próximos passos
+
+| Módulo | Situação |
+|---|---|
+| REURB, regularização fundiária urbana | protótipo funcional |
+| Inteligência territorial | hidrografia consultada ao vivo (OpenStreetMap); demais temas simulados |
+| Cadastro territorial multifinalitário, regularização rural, georreferenciamento de imóveis | planejados |
+
+1. Módulo de diagnóstico territorial com conectores às fontes oficiais.
+2. Importação de levantamentos (CSV de GNSS e estação total, GeoPackage, DXF) pelo navegador.
+3. Peças em PDF com QR de verificação: CRF, listagem de ocupantes, notificações, edital.
+4. Projeto QGIS pronto junto do GeoPackage.
+5. Aplicativo de campo offline para cadastro socioeconômico e coleta.
 6. Integração com o Registro de Imóveis (ONR/SAEC) quando o leiaute oficial for verificado.
-7. Autenticação e perfis: prefeitura, equipe técnica, cartório, beneficiário.
+
+## Autoria
+
+Desenvolvido pelo **GPGeoIA - Grupo de Pesquisa em Inteligência Artificial Geoespacial** da Universidade Federal de Viçosa (UFV).
+
+Responsável: Prof. Dr. Darlan Miranda Nunes.
 
 ## Licença
 
-Código sob a **GNU Affero General Public License v3.0 ou posterior** ([LICENSE](LICENSE)). Quem usar ou oferecer o sistema como serviço, inclusive modificado, disponibiliza o código correspondente nos mesmos termos. Material didático e documentação de apoio terão licença própria, indicada em cada arquivo quando publicados.
+Código sob a **GNU Affero General Public License v3.0 ou posterior** ([LICENSE](LICENSE)). Quem usar ou oferecer o sistema como serviço, inclusive modificado, disponibiliza o código correspondente nos mesmos termos. Os dados de base do OpenStreetMap seguem a ODbL. Material didático e documentação de apoio terão licença própria, indicada em cada arquivo quando publicados.
