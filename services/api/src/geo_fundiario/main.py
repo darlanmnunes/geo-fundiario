@@ -4,16 +4,23 @@ from __future__ import annotations
 
 import json
 from contextlib import asynccontextmanager
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import PlainTextResponse
 from shapely import wkb
-from shapely.geometry import Point
 
-from geo_fundiario import documentos
+from geo_fundiario import acesso, assistente, diagnostico, documentos, edicao, gpkg
+from geo_fundiario.acesso import exigir
 from geo_fundiario.banco import cfg, consulta, pool
 from geo_fundiario.geodesia import Vertice, memorial_descritivo
+from geo_fundiario.instantaneo import confrontantes as nomear_confrontantes
+from geo_fundiario.instantaneo import instantaneo, tudo
+from geo_fundiario.seguranca import Protecao
+
+Nivel = Literal["nucleo", "quadra", "lote", "edificacao", "unidade_autonoma", "area_publica"]
 
 
 @asynccontextmanager
@@ -23,11 +30,29 @@ async def lifespan(_: FastAPI):
     pool.close()
 
 
-app = FastAPI(title="Geo-Fundiário API", version="0.1.0", lifespan=lifespan)
-app.add_middleware(
-    CORSMiddleware, allow_origins=cfg.cors_origins.split(","), allow_methods=["GET", "POST"], allow_headers=["*"]
+app = FastAPI(
+    title="Geo-Fundiário API",
+    version="0.2.0",
+    lifespan=lifespan,
+    # Em produção a documentação interativa não é publicada: ela mapeia toda a superfície da API.
+    docs_url=None if cfg.producao else "/docs",
+    redoc_url=None,
+    openapi_url=None if cfg.producao else "/openapi.json",
 )
+# A ordem importa: o último adicionado é o primeiro a ver a requisição.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[o.strip() for o in cfg.cors_origins.split(",") if o.strip()],
+    allow_methods=["GET", "POST", "PUT", "PATCH"],
+    allow_headers=["Authorization", "Content-Type"],
+    max_age=600,
+)
+app.add_middleware(Protecao)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=[h.strip() for h in cfg.hosts.split(",") if h.strip()])
 app.include_router(documentos.router)
+app.include_router(assistente.router)
+app.include_router(acesso.router)
+app.include_router(edicao.router)
 
 
 @app.get("/saude")
@@ -57,7 +82,48 @@ def projetos():
     )
 
 
-@app.get("/projetos/{projeto_id}")
+@app.get("/instantaneo", dependencies=[exigir("leitura")])
+def instantaneo_geral():
+    """Tudo o que a interface mostra, de todos os núcleos: é o que ela lê quando GEOF_API_URL está definido."""
+    return json.loads(json.dumps(tudo(), default=str))
+
+
+@app.get("/projetos/{projeto_id}/instantaneo", dependencies=[exigir("leitura")])
+def instantaneo_projeto(projeto_id: int):
+    dados = instantaneo(projeto_id)
+    if dados is None:
+        raise HTTPException(404, "Projeto não encontrado")
+    return json.loads(json.dumps(dados, default=str))
+
+
+@app.get("/diagnostico/conectores")
+def conectores():
+    """Catálogo dos temas do diagnóstico territorial e de onde cada um é consultado."""
+    return diagnostico.catalogo()
+
+
+@app.get("/projetos/{projeto_id}/diagnostico", dependencies=[exigir("leitura")])
+def diagnostico_ao_vivo(projeto_id: int):
+    """Consulta AGORA as fontes ligadas (conectores ao vivo) para o perímetro vigente do núcleo."""
+    resultado = diagnostico.diagnosticar(projeto_id)
+    if not resultado:
+        raise HTTPException(404, "Projeto sem perímetro cadastrado")
+    return resultado
+
+
+@app.get("/projetos/{projeto_id}/geopackage", dependencies=[exigir("leitura")])
+def geopackage(projeto_id: int):
+    from pathlib import Path
+
+    from fastapi.responses import FileResponse
+
+    if not consulta("select 1 from reurb.projeto where id = %s", projeto_id):
+        raise HTTPException(404, "Projeto não encontrado")
+    arquivo = gpkg.exportar(projeto_id, Path(cfg.arquivos_dir) / "_exportacoes" / f"nucleo-{projeto_id}.gpkg")
+    return FileResponse(arquivo, media_type="application/geopackage+sqlite3", filename=arquivo.name)
+
+
+@app.get("/projetos/{projeto_id}", dependencies=[exigir("leitura")])
 def projeto(projeto_id: int):
     linhas = consulta("select * from reurb.projeto where id = %s", projeto_id)
     if not linhas:
@@ -80,8 +146,8 @@ def projeto(projeto_id: int):
     return p
 
 
-@app.get("/projetos/{projeto_id}/camadas/{nivel}")
-def camada(projeto_id: int, nivel: str):
+@app.get("/projetos/{projeto_id}/camadas/{nivel}", dependencies=[exigir("leitura")])
+def camada(projeto_id: int, nivel: Nivel):
     """GeoJSON (EPSG:4674 ≈ WGS84 para visualização web) de uma camada do núcleo."""
     linhas = consulta(
         """
@@ -107,7 +173,7 @@ def camada(projeto_id: int, nivel: str):
 @app.get("/projetos/{projeto_id}/qualidade-vertices")
 def qualidade(projeto_id: int):
     return consulta(
-        "select * from ladm.vw_qualidade_vertice where projeto_id = %s order by atende_dec_9310, erro_esferico_m desc",
+        "select * from ladm.vw_qualidade_vertice where projeto_id = %s order by atende_dec_9310, erro_posicional_3d_m desc",
         projeto_id,
     )
 
@@ -142,39 +208,40 @@ def _dados_memorial(lote_id: int) -> dict:
         )
     ]
     vizinhos = consulta(
-        """select su.id, su.rotulo, q.rotulo quadra, ST_AsBinary(ST_Transform(su.geom, %s)) g
+        """select su.codigo, su.rotulo, q.rotulo quadra, ST_AsBinary(ST_Transform(su.geom, %s)) g
              from ladm.la_spatialunit su left join ladm.la_spatialunit q on q.id = su.parent_id
-            where su.projeto_id = %s and su.nivel = 'lote' and su.id <> %s and su.end_lifespan_version is null""",
+            where su.projeto_id = %s and su.nivel = 'lote' and su.end_lifespan_version is null""",
         srid,
         lote["projeto_id"],
-        lote_id,
     )
     ruas = consulta(
         "select nome, ST_AsBinary(ST_Transform(geom, %s)) g from reurb.logradouro where projeto_id = %s",
         srid,
         lote["projeto_id"],
     )
-    viz_geom = [(f"{v['rotulo']} da {v['quadra']}", wkb.loads(v["g"])) for v in vizinhos]
-    rua_geom = [(r["nome"], wkb.loads(r["g"])) for r in ruas]
-    confr = []
-    for i, a in enumerate(vertices):
-        b = vertices[(i + 1) % len(vertices)]
-        meio = Point((a.e + b.e) / 2, (a.n + b.n) / 2)
-        nome = next((n for n, g in viz_geom if g.boundary.distance(meio) < 0.05), None)
-        if nome is None and rua_geom:
-            nome = min(rua_geom, key=lambda r: r[1].distance(meio))[0]
-        confr.append(nome or "área não identificada")
+    aguas = consulta(
+        "select coalesce(nome, 'Corpo d''água') nome, ST_AsBinary(ST_Transform(geom, %s)) g from reurb.hidrografia where projeto_id = %s",
+        srid,
+        lote["projeto_id"],
+    )
+    confr = nomear_confrontantes(
+        vertices,
+        lote["codigo"],
+        [(v["codigo"], f"{v['rotulo']} da {v['quadra']}", wkb.loads(bytes(v["g"]))) for v in vizinhos],
+        [(r["nome"], wkb.loads(bytes(r["g"]))) for r in ruas],
+        [(r["nome"], wkb.loads(bytes(r["g"]))) for r in aguas],
+    )
     return {"lote": lote, "vertices": vertices, "confrontantes": confr}
 
 
-@app.get("/lotes/{lote_id}/memorial", response_class=PlainTextResponse)
+@app.get("/lotes/{lote_id}/memorial", response_class=PlainTextResponse, dependencies=[exigir("leitura")])
 def memorial(lote_id: int):
     d = _dados_memorial(lote_id)
     lote = d["lote"]
     return memorial_descritivo(
-        titulo=f"{lote['rotulo']} — {lote['quadra']}",
         imovel=f"{lote['projeto']}, {lote['rotulo']}, {lote['quadra']}",
-        municipio_uf=f"{lote['municipio_nome']}/{lote['uf']}",
+        municipio=lote["municipio_nome"],
+        uf=lote["uf"],
         vertices=d["vertices"],
         confrontantes=d["confrontantes"],
         srid_utm=lote["srid_utm"],
@@ -183,7 +250,7 @@ def memorial(lote_id: int):
     )
 
 
-@app.get("/projetos/{projeto_id}/exportacao-registro")
+@app.get("/projetos/{projeto_id}/exportacao-registro", dependencies=[exigir("leitura")])
 def exportacao_registro(projeto_id: int):
     """Pacote estruturado para o Registro de Imóveis (CRF art. 41 + listagem de ocupantes).
 

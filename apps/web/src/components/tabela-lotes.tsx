@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
-import { Search } from "lucide-react";
+import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import { Ponto, Tabela } from "./ui";
-import { fmt, SITUACAO_LOTE, TIPO_DOCUMENTO, type SituacaoLote } from "@/lib/dominio";
+import { fmt, SITUACAO_LOTE, SITUACOES, TIPO_DOCUMENTO, type SituacaoLote } from "@/lib/dominio";
 
 export interface LinhaLote {
   codigo: string;
@@ -21,14 +21,6 @@ export interface LinhaLote {
 }
 
 type Ordem = keyof Pick<LinhaLote, "codigo" | "area_m2" | "renda_sm" | "pendencias">;
-
-function Ordenador({ por, ordem, aoOrdenar, direita, children }: { por: Ordem; ordem: { por: Ordem; asc: boolean }; aoOrdenar: (p: Ordem) => void; direita?: boolean; children: React.ReactNode }) {
-  return (
-    <button onClick={() => aoOrdenar(por)} className={clsx("rotulo flex items-center gap-1 hover:text-tinta-900", direita && "ml-auto")}>
-      {children} {ordem.por === por && <span aria-hidden>{ordem.asc ? "↑" : "↓"}</span>}
-    </button>
-  );
-}
 
 export function TabelaLotes({ projetoId, linhas, limiteRendaSm }: { projetoId: number; linhas: LinhaLote[]; limiteRendaSm: number | null }) {
   const [busca, setBusca] = useState("");
@@ -49,54 +41,52 @@ export function TabelaLotes({ projetoId, linhas, limiteRendaSm }: { projetoId: n
     });
   }, [linhas, busca, filtro, ordem]);
 
-  const ordenar = (por: Ordem) => setOrdem((o) => ({ por, asc: o.por === por ? !o.asc : true }));
-  const th = (por: Ordem, texto: string, direita = false) => <Ordenador key={por} por={por} ordem={ordem} aoOrdenar={ordenar} direita={direita}>{texto}</Ordenador>;
+  const th = (por: Ordem, texto: string) => (
+    <button key={por} type="button" onClick={() => setOrdem((o) => ({ por, asc: o.por === por ? !o.asc : true }))} className="flex items-center gap-1 font-semibold hover:text-azul" aria-label={`Ordenar por ${texto}`}>
+      {texto} {ordem.por === por && (ordem.asc ? <ArrowUp className="size-3.5" aria-label="crescente" /> : <ArrowDown className="size-3.5" aria-label="decrescente" />)}
+    </button>
+  );
+  const opcoes: (SituacaoLote | "todos" | "docs")[] = ["todos", ...SITUACOES, "docs"];
 
   return (
     <div className="painel">
-      <div className="flex flex-wrap items-center gap-3 border-b fio p-3">
+      <div className="flex flex-wrap items-center gap-3 border-b border-borda p-3">
         <label className="relative min-w-56 flex-1">
-          <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-tinta-300" />
-          <input
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            placeholder="Lote ou nome do ocupante"
-            className="w-full rounded border fio bg-papel-50 py-1.5 pr-3 pl-8 text-[13px] outline-none focus:border-tinta-900/40"
-          />
+          <span className="sr-only">Buscar unidade ou ocupante</span>
+          <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-texto-3" aria-hidden />
+          <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar por unidade (Q01-L03) ou nome do ocupante"
+            className="h-8 w-full rounded border border-borda-forte bg-superficie pr-3 pl-8 text-[13.5px] placeholder:text-texto-3" />
         </label>
-        <div className="flex flex-wrap gap-1">
-          {(["todos", ...Object.keys(SITUACAO_LOTE), "docs"] as (SituacaoLote | "todos" | "docs")[]).map((s) => (
-            <button
-              key={s}
-              onClick={() => setFiltro(s)}
-              className={clsx("flex items-center gap-1.5 rounded border px-2 py-0.5 text-[12px]", filtro === s ? "border-tinta-900 bg-tinta-900 text-papel-50" : "fio bg-papel-50 text-tinta-700 hover:border-tinta-900/40")}
-            >
-              {s !== "todos" && s !== "docs" && <Ponto cor={SITUACAO_LOTE[s].cor} />}
-              {s === "todos" ? `Todos (${linhas.length})` : s === "docs" ? `Faltam documentos (${linhas.filter((l) => l.docs_pendentes.length).length})` : `${SITUACAO_LOTE[s].rotulo} (${linhas.filter((l) => l.situacao === s).length})`}
-            </button>
-          ))}
-        </div>
+        <label className="flex items-center gap-2 text-[13px] text-texto-2">
+          Situação
+          <select value={filtro} onChange={(e) => setFiltro(e.target.value as typeof filtro)} className="h-8 rounded border border-borda-forte bg-superficie px-2 text-[13.5px] text-texto">
+            {opcoes.map((s) => (
+              <option key={s} value={s}>
+                {s === "todos" ? `Todas (${linhas.length})` : s === "docs" ? `Com documento faltando (${linhas.filter((l) => l.docs_pendentes.length).length})` : `${SITUACAO_LOTE[s].rotulo} (${linhas.filter((l) => l.situacao === s).length})`}
+              </option>
+            ))}
+          </select>
+        </label>
+        <span className="num text-[13px] text-texto-3" aria-live="polite">{visiveis.length} de {linhas.length}</span>
       </div>
-      <div className="px-3">
-        <Tabela cabecalho={[th("codigo", "Lote"), "Situação", "Ocupante", "CPF", "Família", th("renda_sm", "Renda (SM)", true), th("area_m2", "Área m²", true), "Documentos", th("pendencias", "Pend.", true)]}>
-          {visiveis.map((l) => (
-            <tr key={l.codigo} className="hover:bg-papel-100/70">
-              <td className="py-2 pr-4"><Link href={`/projetos/${projetoId}/lotes/${l.codigo}`} className="mono font-medium text-terra-700 hover:underline">{l.codigo}</Link></td>
-              <td className="py-2 pr-4"><span className="flex items-center gap-1.5 text-tinta-700"><Ponto cor={SITUACAO_LOTE[l.situacao].cor} /> {SITUACAO_LOTE[l.situacao].rotulo}</span></td>
-              <td className="py-2 pr-4 text-tinta-900">{l.ocupante ?? <span className="text-tinta-300">lote vazio</span>}</td>
-              <td className="mono py-2 pr-4 text-tinta-500">{l.cpf ?? "—"}</td>
-              <td className="py-2 pr-4 text-right">{l.familia ?? "—"}</td>
-              <td className={clsx("py-2 pr-4 text-right", limiteRendaSm && l.renda_sm && l.renda_sm > limiteRendaSm && "font-medium text-carimbo-600")}>{l.renda_sm != null ? fmt.num(l.renda_sm, 1) : "—"}</td>
-              <td className="py-2 pr-4 text-right">{fmt.num(l.area_m2)}</td>
-              <td className="py-2 pr-4 text-[12px]">
-                {l.docs_pendentes.length ? <span className="text-ocre-700" title={l.docs_pendentes.map((d) => TIPO_DOCUMENTO[d]).join(", ")}>faltam {l.docs_pendentes.length}</span> : l.ocupante ? <span className="text-oliva-700">completos</span> : "—"}
-              </td>
-              <td className="py-2 text-right">{l.pendencias ? <span className="font-medium text-ocre-700">{l.pendencias}</span> : "—"}</td>
-            </tr>
-          ))}
-        </Tabela>
-        {!visiveis.length && <p className="p-6 text-center text-[13px] text-tinta-500">Nenhum lote encontrado.</p>}
-      </div>
+      <Tabela cabecalho={[th("codigo", "Unidade"), "Situação", "Ocupante", "CPF", "Pessoas", th("renda_sm", "Renda (SM)"), th("area_m2", "Área (m²)"), "Documentos", th("pendencias", "Pendências")]}>
+        {visiveis.map((l) => (
+          <tr key={l.codigo} className="hover:bg-realce">
+            <td className="px-3 py-2"><Link href={`/projetos/${projetoId}/lotes/${l.codigo}`} className="cod font-medium text-azul hover:underline">{l.codigo}</Link></td>
+            <td className="px-3 py-2"><span className="flex items-center gap-1.5"><Ponto cor={SITUACAO_LOTE[l.situacao].cor} /> {SITUACAO_LOTE[l.situacao].rotulo}</span></td>
+            <td className="px-3 py-2">{l.ocupante ?? <span className="text-texto-3">sem ocupante identificado</span>}</td>
+            <td className="cod px-3 py-2 text-texto-2">{l.cpf ?? ""}</td>
+            <td className="px-3 py-2 text-right">{l.familia ?? ""}</td>
+            <td className={clsx("px-3 py-2 text-right", limiteRendaSm && l.renda_sm && l.renda_sm > limiteRendaSm && "font-semibold text-vermelho")}>{l.renda_sm != null ? fmt.num(l.renda_sm, 1) : ""}</td>
+            <td className="px-3 py-2 text-right">{fmt.num(l.area_m2)}</td>
+            <td className="px-3 py-2">
+              {l.docs_pendentes.length ? <span className="text-ambar" title={l.docs_pendentes.map((d) => TIPO_DOCUMENTO[d]).join(", ")}>faltam {l.docs_pendentes.length}</span> : l.ocupante ? <span className="text-verde">completos</span> : ""}
+            </td>
+            <td className="px-3 py-2 text-right">{l.pendencias ? <span className="font-semibold text-ambar">{l.pendencias}</span> : <span className="text-texto-3">0</span>}</td>
+          </tr>
+        ))}
+      </Tabela>
+      {!visiveis.length && <p className="p-6 text-center text-[13.5px] text-texto-2">Nenhuma unidade corresponde à busca. Limpe o texto ou escolha outra situação.</p>}
     </div>
   );
 }

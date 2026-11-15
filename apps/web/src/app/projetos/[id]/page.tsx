@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { Carregando } from "@/components/ui";
 import { Workspace, type FaseResumo, type LoteResumo } from "@/components/workspace";
-import { camadasBase, indicadores, lotesDe, lotesParaMapa, obterProjeto } from "@/lib/dados";
+import { camadasMapa, indicadores, lotesDe, obterProjeto } from "@/lib/dados";
 
 async function Conteudo({ params }: Pick<PageProps<"/projetos/[id]">, "params">) {
   const p = obterProjeto((await params).id)!;
@@ -11,7 +11,6 @@ async function Conteudo({ params }: Pick<PageProps<"/projetos/[id]">, "params">)
     quadra: l.quadra,
     situacao: l.situacao,
     area_m2: l.area_m2,
-    edificado: l.edificado,
     ocupante: l.ocupante && {
       nome: l.ocupante.nome,
       renda_sm: l.ocupante.renda_sm,
@@ -25,19 +24,10 @@ async function Conteudo({ params }: Pick<PageProps<"/projetos/[id]">, "params">)
   return (
     <Workspace
       projetoId={p.id}
-      modalidade={p.modalidade}
-      camadas={camadasBase(p)}
-      lotesMapa={lotesParaMapa(p)}
+      camadas={camadasMapa([p])}
       lotes={lotes}
       fases={fases}
-      resumo={{
-        familias: k.familias,
-        pessoas: k.pessoas,
-        areaLotes: k.areaLotes,
-        docsPendentes: k.docsPendentes,
-        assinaturasPendentes: k.assinaturasPendentes,
-        impugnacoes: p.notificacoes.filter((n) => n.resposta === "impugnacao").length,
-      }}
+      resumo={{ familias: k.familias, pessoas: k.pessoas, areaLotes: k.areaLotes, docsPendentes: k.docsPendentes, assinaturasPendentes: k.assinaturasPendentes, impugnacoes: k.impugnacoes, verticesFora: k.verticesFora }}
     />
   );
 }

@@ -9,8 +9,9 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from datetime import date
 
-from pyproj import CRS
+from pyproj import CRS, Proj
 
 
 @dataclass(frozen=True)
@@ -83,56 +84,104 @@ def segmentos(vertices: list[Vertice], confrontantes: list[str]) -> list[Segment
     return out
 
 
+MESES = [
+    "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+    "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+]  # fmt: skip
+
+
+def fuso_utm(srid_utm: int) -> int:
+    return int((meridiano_central(srid_utm) + 183) / 6)
+
+
+def fatores_cartograficos(srid_utm: int, lon: float, lat: float) -> dict:
+    """Convergência meridiana e fator de escala da projeção num ponto (graus decimais, SIRGAS 2000).
+
+    Sinal da convergência como no PROJ: negativo quando o norte da quadrícula fica a oeste do norte
+    verdadeiro (no hemisfério sul, a leste do meridiano central).
+    """
+    f = Proj(CRS.from_epsg(srid_utm)).get_factors(lon, lat)
+    return {"convergencia_graus": round(f.meridian_convergence, 6), "fator_escala": round(f.meridional_scale, 6)}
+
+
 def memorial_descritivo(
     *,
-    titulo: str,
     imovel: str,
-    municipio_uf: str,
+    municipio: str,
+    uf: str,
     vertices: list[Vertice],
     confrontantes: list[str],
     srid_utm: int,
+    titular: str | None = None,
+    rotulo_titular: str = "OCUPANTE",
     responsavel: str | None = None,
     art_rrt: str | None = None,
+    data: date | None = None,
 ) -> str:
-    """Redige o memorial no padrão usual de georreferenciamento (vértices, azimutes, distâncias)."""
+    """Redige o memorial descritivo: quadro do imóvel, descrição do perímetro e fecho com assinaturas.
+
+    A descrição percorre os vértices na ordem dada (sentido horário a partir do mais ao norte, por
+    convenção de quem chama). O confrontante só é citado quando muda de um trecho para o outro.
+    """
     segs = segmentos(vertices, confrontantes)
     area = area_shoelace(vertices)
     perimetro = sum(s.distancia_m for s in segs)
     mc = meridiano_central(srid_utm)
     v0 = vertices[0]
 
-    linhas = [
-        f"MEMORIAL DESCRITIVO — {titulo}",
-        "",
-        f"Imóvel: {imovel}",
-        f"Município/UF: {municipio_uf}",
-        f"Área: {fmt_num(area)} m²    Perímetro: {fmt_num(perimetro)} m",
-        "",
-        (
-            f"Inicia-se a descrição deste perímetro no vértice {v0.codigo}, de coordenadas "
-            f"N {fmt_num(v0.n, 3)} m e E {fmt_num(v0.e, 3)} m;"
-        ),
-    ]
+    def coord(v: Vertice) -> str:
+        return f"de coordenadas {fmt_num(v.n, 3)} m Norte e {fmt_num(v.e, 3)} m Leste"
+
+    partes = [f"Inicia-se a descrição deste perímetro no vértice {v0.codigo}, {coord(v0)}"]
+    anterior = None
     for s in segs:
-        fim = "início da descrição" if s.para is v0 else f"vértice {s.para.codigo}"
-        coord = "" if s.para is v0 else f", de coordenadas N {fmt_num(s.para.n, 3)} m e E {fmt_num(s.para.e, 3)} m"
-        linhas.append(
-            f"deste, segue confrontando com {s.confrontante}, com azimute de {gms(s.azimute_graus)} "
-            f"e distância de {fmt_num(s.distancia_m)} m até o {fim}{coord};"
+        trecho = "deste, "
+        if s.confrontante != anterior:
+            trecho += f"confrontando neste trecho com {s.confrontante}, "
+            anterior = s.confrontante
+        trecho += (
+            f"seguindo com distância de {fmt_num(s.distancia_m, 3)} m e azimute plano de "
+            f"{gms(s.azimute_graus)} chega-se ao vértice {s.para.codigo}"
         )
-    linhas[-1] = linhas[-1].rstrip(";") + ", fechando assim o perímetro acima descrito."
-    linhas += [
+        trecho += ", ponto inicial da descrição deste perímetro" if s.para is v0 else f", {coord(s.para)}"
+        partes.append(trecho)
+    descricao = (
+        "; ".join(partes)
+        + ". Todas as coordenadas aqui descritas estão georreferenciadas ao Sistema Geodésico Brasileiro, "
+        "SIRGAS 2000 (época 2000,4), e encontram-se representadas no Sistema UTM, "
+        f"fuso {fuso_utm(srid_utm)} S, referenciadas ao Meridiano Central {abs(mc)}° WGr. "
+        "Todos os azimutes e distâncias, área e perímetro foram calculados no plano de projeção UTM."
+    )
+
+    linhas = [
+        "MEMORIAL DESCRITIVO",
         "",
-        (
-            "Todas as coordenadas aqui descritas estão georreferenciadas ao Sistema Geodésico Brasileiro "
-            f"e encontram-se representadas no Sistema UTM, referenciadas ao Meridiano Central {abs(mc)}° WGr, "
-            "tendo como datum o SIRGAS 2000. Todos os azimutes e distâncias, área e perímetro foram "
-            "calculados no plano de projeção UTM."
-        ),
+        f"IMÓVEL: {imovel}",
+        f"MUNICÍPIO: {municipio}",
+        f"ESTADO: {uf}",
     ]
+    if titular:
+        linhas.append(f"{rotulo_titular}: {titular}")
+    linhas += [
+        f"ÁREA: {fmt_num(area)} m² ({fmt_num(area / 10_000, 4)} ha)",
+        f"PERÍMETRO: {fmt_num(perimetro)} m",
+        "",
+        "DESCRIÇÃO DO PERÍMETRO",
+        "",
+        descricao,
+        "",
+        "INFORMAÇÕES ADICIONAIS",
+        "",
+        "A planta em anexo é parte integrante deste memorial descritivo.",
+        "Os limites e os nomes dos confrontantes informados no memorial e na planta são os declarados "
+        "em campo e conferidos com as demais unidades do levantamento.",
+    ]
+    if data:
+        linhas += ["", f"{municipio}, {data.day} de {MESES[data.month - 1]} de {data.year}."]
     if responsavel:
-        linhas += [
-            "",
-            f"Responsável técnico: {responsavel}" + (f" — ART/RRT {art_rrt}" if art_rrt else ""),
-        ]
+        linhas += ["", "Responsável técnico:", "______________________________", responsavel]
+        if art_rrt:
+            linhas.append(f"ART/RRT: {art_rrt}")
+    if titular:
+        linhas += ["", f"{rotulo_titular.capitalize()}:", "______________________________", titular]
     return "\n".join(linhas)

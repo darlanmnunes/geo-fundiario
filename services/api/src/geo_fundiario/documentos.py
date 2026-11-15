@@ -8,17 +8,27 @@ from __future__ import annotations
 
 import hashlib
 import shutil
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import Path as PathParam
 from fastapi.responses import FileResponse
 
-from geo_fundiario.banco import consulta, pool
+from geo_fundiario.acesso import Usuario, exigir
+from geo_fundiario.banco import cfg, consulta, pool
 
 router = APIRouter(tags=["documentos"])
 
+# Só o que um processo de regularização junta de fato. Executáveis, HTML e SVG ficam de fora de propósito.
+MIMES_ACEITOS = {
+    "application/pdf", "image/jpeg", "image/png", "image/tiff", "text/csv", "text/plain", "application/zip",
+    "application/geopackage+sqlite3", "application/dxf", "image/vnd.dxf", "application/geo+json",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+}  # fmt: skip
 ENTIDADES = {"party", "spatialunit", "baunit", "peca", "notificacao", "projeto_fase", "cadastro_social", "levantamento"}
 
 
@@ -42,8 +52,6 @@ class ArmazenamentoLocal:
 
 
 def armazenamento() -> ArmazenamentoLocal:
-    from geo_fundiario.banco import cfg
-
     return ArmazenamentoLocal(Path(cfg.arquivos_dir))
 
 
@@ -56,11 +64,18 @@ async def enviar(
     entidade: Annotated[str | None, Form()] = None,
     entidade_id: Annotated[str | None, Form()] = None,
     papel: Annotated[str, Form()] = "anexo",
+    usuario: Usuario | None = exigir("editor"),
 ):
     if entidade and entidade not in ENTIDADES:
         raise HTTPException(422, f"entidade deve ser uma de {sorted(ENTIDADES)}")
+    mime = (arquivo.content_type or "").split(";")[0].strip().lower()
+    if mime not in MIMES_ACEITOS:
+        raise HTTPException(415, "Tipo de arquivo não aceito")
+    if not consulta("select 1 from documentos.tipo_documento where codigo = %s", tipo):
+        raise HTTPException(422, "tipo de documento desconhecido")
+    limite = cfg.upload_max_mb * 1024 * 1024
     arm = armazenamento()
-    tmp = arm.raiz / "_tmp" / f"{id(arquivo)}.part"
+    tmp = arm.raiz / "_tmp" / f"{uuid.uuid4().hex}.part"
     tmp.parent.mkdir(parents=True, exist_ok=True)
     h = hashlib.sha256()
     tamanho = 0
@@ -68,22 +83,28 @@ async def enviar(
         while bloco := await arquivo.read(1 << 20):
             h.update(bloco)
             tamanho += len(bloco)
+            if tamanho > limite:  # o cabeçalho Content-Length pode mentir; conta-se o que chega
+                f.close()
+                tmp.unlink(missing_ok=True)
+                raise HTTPException(413, f"Arquivo acima de {cfg.upload_max_mb} MB")
             f.write(bloco)
     sha = h.hexdigest()
     chave = arm.gravar(tmp, sha)
     with pool.connection() as conn:
+        conn.execute("select set_config('geof.usuario', %s, true)", (usuario.email if usuario else "servico",))
         doc = conn.execute(
-            """insert into documentos.documento (projeto_id, tipo, titulo, nome_arquivo, mime, tamanho_bytes, sha256, chave_armazenamento)
-               values (%s, %s, %s, %s, %s, %s, %s, %s) returning id, codigo_verificacao, sha256, versao""",
+            """insert into documentos.documento (projeto_id, tipo, titulo, nome_arquivo, mime, tamanho_bytes, sha256, chave_armazenamento, enviado_por)
+               values (%s, %s, %s, %s, %s, %s, %s, %s, %s) returning id, codigo_verificacao, sha256, versao""",
             (
                 projeto_id,
                 tipo,
                 titulo,
-                arquivo.filename or "arquivo",
-                arquivo.content_type or "application/octet-stream",
+                Path(arquivo.filename or "arquivo").name[:200],  # sem diretórios: o nome vai para Content-Disposition
+                mime,
                 tamanho,
                 sha,
                 chave,
+                usuario.email if usuario else "servico",
             ),
         ).fetchone()
         if entidade and entidade_id:
@@ -94,8 +115,8 @@ async def enviar(
     return doc
 
 
-@router.get("/documentos/{documento_id}")
-def detalhe(documento_id: str):
+@router.get("/documentos/{documento_id}", dependencies=[exigir("leitura")])
+def detalhe(documento_id: uuid.UUID):
     linhas = consulta(
         """select d.*, coalesce(json_agg(json_build_object('entidade', v.entidade, 'entidade_id', v.entidade_id, 'papel', v.papel))
                       filter (where v.documento_id is not null), '[]'::json) as vinculos,
@@ -110,8 +131,8 @@ def detalhe(documento_id: str):
     return linhas[0]
 
 
-@router.get("/documentos/{documento_id}/arquivo")
-def arquivo(documento_id: str):
+@router.get("/documentos/{documento_id}/arquivo", dependencies=[exigir("leitura")])
+def arquivo(documento_id: uuid.UUID):
     d = consulta(
         "select nome_arquivo, mime, chave_armazenamento, armazenamento from documentos.documento where id = %s",
         documento_id,
@@ -123,11 +144,14 @@ def arquivo(documento_id: str):
     caminho = armazenamento().caminho(d[0]["chave_armazenamento"])
     if not caminho.exists():
         raise HTTPException(410, "Arquivo ausente no armazenamento")
-    return FileResponse(caminho, media_type=d[0]["mime"], filename=d[0]["nome_arquivo"])
+    # attachment: o navegador baixa em vez de abrir, o que tira de cena conteúdo ativo num arquivo enviado
+    return FileResponse(
+        caminho, media_type=d[0]["mime"], filename=d[0]["nome_arquivo"], content_disposition_type="attachment"
+    )
 
 
 @router.get("/verificar/{codigo}")
-def verificar(codigo: str):
+def verificar(codigo: Annotated[str, PathParam(pattern=r"^[A-Za-z0-9]{10}$")]):
     """Verificação pública (o QR da peça aponta para cá): confirma existência, hash e assinaturas, sem expor o arquivo."""
     d = consulta(
         """select d.id, d.titulo, d.tipo, d.sha256, d.criado_em, d.situacao, p.nome as nucleo,
@@ -142,7 +166,7 @@ def verificar(codigo: str):
     return {"autentico": d[0]["situacao"] == "ativo", **d[0]}
 
 
-@router.get("/projetos/{projeto_id}/documentos")
+@router.get("/projetos/{projeto_id}/documentos", dependencies=[exigir("leitura")])
 def por_projeto(projeto_id: int, entidade: str | None = None, entidade_id: str | None = None):
     sql = """select d.id, d.tipo, d.titulo, d.nome_arquivo, d.mime, d.tamanho_bytes, d.sha256, d.origem, d.codigo_verificacao, d.criado_em,
                     v.entidade, v.entidade_id, v.papel
@@ -158,7 +182,7 @@ def por_projeto(projeto_id: int, entidade: str | None = None, entidade_id: str |
     return consulta(sql + " order by d.criado_em desc", *params)
 
 
-@router.get("/projetos/{projeto_id}/pendencias-documentais")
+@router.get("/projetos/{projeto_id}/pendencias-documentais", dependencies=[exigir("leitura")])
 def pendencias(projeto_id: int):
     return consulta(
         "select * from documentos.vw_pendencias_pessoa where projeto_id = %s order by nome, tipo", projeto_id

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { CornerDownLeft, FileText, LandPlot, Map, Scale, User } from "lucide-react";
@@ -18,15 +18,13 @@ const ICONE = { pagina: Map, projeto: LandPlot, lote: LandPlot, pessoa: User, fa
 const ROTULO = { pagina: "Página", projeto: "Núcleo", lote: "Lote", pessoa: "Ocupante", fase: "Fase", documento: "Documento" };
 
 export function normalizar(s: string) {
-  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
 export function PaletaComandos({ itens }: { itens: ItemBusca[] }) {
   const [aberta, setAberta] = useState(false);
   const [q, setQ] = useState("");
   const [idx, setIdx] = useState(0);
-  const input = useRef<HTMLInputElement>(null);
-  void input;
   const router = useRouter();
 
   useEffect(() => {
@@ -67,10 +65,9 @@ export function PaletaComandos({ itens }: { itens: ItemBusca[] }) {
 
   if (!aberta) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-tinta-900/40 px-4 pt-[12vh] backdrop-blur-[2px]" onClick={() => setAberta(false)} role="dialog" aria-modal="true" aria-label="Busca e comandos">
-      <div className="painel surgir w-full max-w-xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-texto/45 px-4 pt-[12vh]" onClick={() => setAberta(false)} role="dialog" aria-modal="true" aria-label="Busca e comandos">
+      <div className="painel w-full max-w-xl overflow-hidden shadow-[0_10px_30px_rgb(27_36_48/0.3)]" onClick={(e) => e.stopPropagation()}>
         <input
-          ref={input}
           autoFocus
           value={q}
           onChange={(e) => {
@@ -82,8 +79,8 @@ export function PaletaComandos({ itens }: { itens: ItemBusca[] }) {
             if (e.key === "ArrowUp") { e.preventDefault(); setIdx((i) => Math.max(i - 1, 0)); }
             if (e.key === "Enter") ir(resultados[idx]);
           }}
-          placeholder="Digite um lote (Q03-L08), um nome, uma fase ou um documento"
-          className="w-full border-b fio bg-transparent px-4 py-3 text-[15px] outline-none placeholder:text-tinta-300"
+          aria-label="Buscar" placeholder="Digite uma unidade (Q01-L03), um nome, uma fase ou um documento"
+          className="w-full border-b border-borda bg-transparent px-4 py-3 text-[15px] outline-none placeholder:text-texto-3"
         />
         <ul className="max-h-[52vh] overflow-y-auto py-1">
           {resultados.map((r, i) => {
@@ -93,25 +90,25 @@ export function PaletaComandos({ itens }: { itens: ItemBusca[] }) {
                 <button
                   onMouseEnter={() => setIdx(i)}
                   onClick={() => ir(r)}
-                  className={clsx("flex w-full items-center gap-3 px-4 py-2 text-left", i === idx ? "bg-terra-100/60" : "hover:bg-papel-100")}
+                  className={clsx("flex w-full items-center gap-3 px-4 py-2 text-left", i === idx ? "bg-azul-claro" : "hover:bg-realce")}
                 >
-                  <Icone className="size-4 shrink-0 text-tinta-500" />
+                  <Icone className="size-4 shrink-0 text-texto-3" />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13.5px] text-tinta-900">{r.titulo}</span>
-                    {r.detalhe && <span className="block truncate text-[12px] text-tinta-500">{r.detalhe}</span>}
+                    <span className="block truncate text-[13.5px] text-texto">{r.titulo}</span>
+                    {r.detalhe && <span className="block truncate text-[12px] text-texto-3">{r.detalhe}</span>}
                   </span>
-                  <span className="rotulo">{ROTULO[r.tipo]}</span>
-                  {i === idx && <CornerDownLeft className="size-3.5 text-tinta-300" />}
+                  <span className="text-[12px] text-texto-3">{ROTULO[r.tipo]}</span>
+                  {i === idx && <CornerDownLeft className="size-3.5 text-texto-3" />}
                 </button>
               </li>
             );
           })}
-          {!resultados.length && <li className="px-4 py-6 text-center text-[13px] text-tinta-500">Nada encontrado para “{q}”.</li>}
+          {!resultados.length && <li className="px-4 py-6 text-center text-[13px] text-texto-3">Nada encontrado para “{q}”.</li>}
         </ul>
-        <div className="flex items-center gap-3 border-t fio px-4 py-1.5 text-[11px] text-tinta-500">
-          <span><kbd className="mono">↑↓</kbd> navegar</span>
-          <span><kbd className="mono">↵</kbd> abrir</span>
-          <span><kbd className="mono">esc</kbd> fechar</span>
+        <div className="flex items-center gap-3 border-t border-borda px-4 py-1.5 text-[12px] text-texto-3">
+          <span><kbd>↑↓</kbd> navegar</span>
+          <span><kbd>↵</kbd> abrir</span>
+          <span><kbd>esc</kbd> fechar</span>
         </div>
       </div>
     </div>

@@ -2,137 +2,198 @@
 @import "maplibre-gl/dist/maplibre-gl.css";
 
 /*
-  Identidade: caderneta de campo + documento técnico.
-  Papel quente como fundo, tinta quase preta, terracota como cor de ação,
-  serifa com personalidade nos títulos e números, mono para códigos e coordenadas.
+  Identidade: sistema institucional de dados territoriais.
+  Superfícies brancas sobre cinza frio, azul como cor de ação e de seleção, uma família sem serifa
+  para tudo e mono apenas em coordenadas e códigos. A cor fica para o estado das coisas.
 */
 @theme inline {
-  --font-sans: var(--font-plex-sans), system-ui, sans-serif;
-  --font-serif: var(--font-fraunces), Georgia, serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-sans: var(--font-texto), "Segoe UI", system-ui, sans-serif;
+  --font-mono: var(--font-codigo), ui-monospace, "SFMono-Regular", monospace;
 
-  --color-papel-50: #fbf9f4;
-  --color-papel-100: #f4f1e8;
-  --color-papel-200: #e9e4d6;
-  --color-papel-300: #d9d2bf;
+  --color-fundo: #f1f3f6;
+  --color-superficie: #ffffff;
+  --color-realce: #f6f8fa;
+  --color-borda: #d5dae1;
+  --color-borda-forte: #a9b3c0;
 
-  --color-tinta-900: #1b1a17;
-  --color-tinta-700: #3a3833;
-  --color-tinta-500: #6b675e;
-  --color-tinta-300: #a39e92;
+  --color-texto: #1b2430;
+  --color-texto-2: #445061;
+  --color-texto-3: #667284;
 
-  --color-terra-700: #8f3f1f;
-  --color-terra-600: #b4532a;
-  --color-terra-500: #c9693f;
-  --color-terra-100: #f6e4da;
+  --color-marinho: #0b2f66;
+  --color-marinho-2: #123f85;
+  --color-azul: #1351b4;
+  --color-azul-escuro: #0c3f91;
+  --color-azul-claro: #e7effb;
 
-  --color-oliva-700: #4c5a2a;
-  --color-oliva-600: #5f6b3a;
-  --color-oliva-100: #e7ebd8;
-
-  --color-ocre-700: #8c5f0f;
-  --color-ocre-600: #c78b1f;
-  --color-ocre-100: #f7ead0;
-
-  --color-registro-700: #233f66;
-  --color-registro-600: #2d4f7c;
-  --color-registro-100: #dde6f1;
-
-  --color-carimbo-600: #a23b2f;
-  --color-carimbo-100: #f5dcd8;
+  --color-verde: #14761f;
+  --color-verde-claro: #e2f4e2;
+  --color-ambar: #8a5a00;
+  --color-ambar-claro: #fdf1cf;
+  --color-vermelho: #b8251a;
+  --color-vermelho-claro: #fbe6e3;
+  --color-roxo: #5e37a6;
+  --color-roxo-claro: #eee8f9;
 }
 
 :root {
   color-scheme: light;
-  --linha: color-mix(in oklab, var(--color-tinta-900) 12%, transparent);
-  --linha-forte: color-mix(in oklab, var(--color-tinta-900) 28%, transparent);
 }
 
 html {
-  background: var(--color-papel-100);
+  background: var(--color-fundo);
+  scrollbar-color: var(--color-borda-forte) transparent;
 }
 
 body {
-  background: var(--color-papel-100);
-  color: var(--color-tinta-900);
-  font-feature-settings: "ss01", "cv05";
+  background: var(--color-fundo);
+  color: var(--color-texto);
+  accent-color: var(--color-azul);
+  caret-color: var(--color-azul);
 }
 
-h1, h2, h3, .serif {
-  font-family: var(--font-serif);
-  font-variation-settings: "opsz" 48, "SOFT" 30, "WONK" 0;
-  letter-spacing: -0.01em;
+h1, h2, h3, h4 {
+  text-wrap: balance;
 }
 
-.mono, .tab {
-  font-family: var(--font-mono);
+::selection {
+  background: #c9dcf8;
+  color: var(--color-texto);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-azul);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+a {
+  text-underline-offset: 2px;
+}
+
+/* Números em colunas alinhadas; mono só onde é medida ou código */
+.num {
   font-variant-numeric: tabular-nums;
 }
-.tab { font-family: var(--font-sans); }
-
-/* Rótulo técnico: pequeno, espaçado, em versalete */
-.rotulo {
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-tinta-500);
+.cod {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.94em;
 }
 
-/* Carimbo: situação com borda fina, como num processo físico */
-.carimbo {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  border: 1px solid currentColor;
-  border-radius: 3px;
-  padding: 1px 7px;
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  line-height: 1.6;
-  white-space: nowrap;
-}
-
-/* Painel: superfície branca com fio, sem sombra pesada */
 .painel {
-  background: #fffdf8;
-  border: 1px solid var(--linha);
-  border-radius: 6px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borda);
+  border-radius: 4px;
 }
 .painel > header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.6rem 0.9rem;
-  border-bottom: 1px solid var(--linha);
+  min-height: 40px;
+  padding: 0.45rem 0.875rem;
+  border-bottom: 1px solid var(--color-borda);
 }
 
-.fio { border-color: var(--linha); }
-.fio-forte { border-color: var(--linha-forte); }
-
-/* Grade milimetrada discreta para áreas vazias do mapa e fundos */
-.milimetrado {
-  background-image:
-    linear-gradient(var(--linha) 1px, transparent 1px),
-    linear-gradient(90deg, var(--linha) 1px, transparent 1px);
-  background-size: 24px 24px;
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 3px;
+  padding: 1px 7px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.55;
+  white-space: nowrap;
 }
 
+kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border: 1px solid var(--color-borda-forte);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  padding: 0 4px;
+  background: var(--color-superficie);
+  color: var(--color-texto-2);
+}
+
+/* MapLibre: controles no mesmo vocabulário do resto */
+.maplibregl-map {
+  font-family: var(--font-texto), system-ui, sans-serif;
+}
 .maplibregl-popup-content {
   border-radius: 4px;
   padding: 8px 10px;
-  box-shadow: 0 6px 20px rgb(27 26 23 / 0.18);
-  font-family: var(--font-plex-sans);
-  font-size: 12px;
+  box-shadow: 0 4px 14px rgb(27 36 48 / 0.22);
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--color-texto);
 }
-.maplibregl-ctrl-group { border-radius: 4px; box-shadow: 0 1px 2px rgb(27 26 23 / .2); }
-.maplibregl-ctrl-scale { font-family: var(--font-plex-mono); font-size: 10px; background: rgb(255 253 248 / .85); border-color: var(--color-tinta-700); }
+.maplibregl-ctrl-group {
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgb(27 36 48 / 0.3);
+}
+.maplibregl-ctrl-scale {
+  font-size: 10.5px;
+  color: var(--color-texto);
+  background: rgb(255 255 255 / 0.8);
+  border-color: var(--color-texto-2);
+}
+/* Atribuição sempre aberta, discreta, como nos portais de mapas */
+.maplibregl-ctrl-attrib {
+  background: rgb(255 255 255 / 0.72);
+  font-size: 10.5px;
+  line-height: 1.5;
+  padding: 0 6px;
+  color: var(--color-texto-2);
+}
+.maplibregl-ctrl-bottom-right {
+  max-width: calc(100% - 130px); /* não cobre a escala; quebra em linhas quando o mapa é estreito */
+}
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  min-height: 0;
+  padding: 0 6px;
+  border-radius: 0;
+  margin: 0;
+}
+.maplibregl-ctrl-attrib.maplibregl-compact .maplibregl-ctrl-attrib-inner {
+  display: block; /* em telas pequenas o MapLibre esconderia a atribuição atrás do "i": mantém aberta */
+}
+.maplibregl-ctrl-attrib.maplibregl-compact .maplibregl-ctrl-attrib-button {
+  display: none;
+}
+.maplibregl-ctrl-attrib a {
+  color: var(--color-texto-2);
+}
+.maplibregl-ctrl-bottom-right .maplibregl-ctrl {
+  margin: 0;
+}
 
-::selection { background: var(--color-terra-100); }
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
 
-@media (prefers-reduced-motion: no-preference) {
-  .surgir { animation: surgir 240ms ease-out both; }
-  @keyframes surgir { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: none } }
+/* Impressão de peças (planta e memorial): só a folha vai para o papel */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .folha-impressao, .folha-impressao * {
+    visibility: visible;
+  }
+  .folha-impressao {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    border: 0 !important;
+  }
+  @page {
+    size: A3 landscape;
+    margin: 8mm;
+  }
 }

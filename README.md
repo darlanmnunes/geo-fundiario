@@ -4,7 +4,9 @@ Plataforma aberta de **gestão fundiária e territorial**: do levantamento de ca
 
 O primeiro módulo é a **Regularização Fundiária Urbana (REURB)**, conforme a Lei 13.465/2017. O núcleo cadastral (LADM, ISO 19152), a geodésia, os documentos e a inteligência territorial são compartilhados e servem de base para os próximos módulos.
 
-> Estado: **protótipo funcional**. Todos os dados de demonstração são fictícios (dois núcleos em Viçosa-MG, gerados por script).
+> Estado: **protótipo funcional**. Os dados de demonstração são fictícios: três núcleos simulados sobre edificações do campus da UFV (geometria do OpenStreetMap, ODbL). Nenhum desses prédios está em regularização.
+>
+> Desenvolvido pelo GPGeoIA - Grupo de Pesquisa em Inteligência Artificial Geoespacial da UFV. Responsável: Prof. Dr. Darlan Miranda Nunes.
 
 | Módulo | Situação |
 |---|---|
@@ -51,20 +53,28 @@ Pré-requisitos: Node 20+, [uv](https://docs.astral.sh/uv/), PostgreSQL 14+ com 
 ```bash
 # 1. Banco
 createdb geo_fundiario
-for f in db/migrations/*.sql; do psql -d geo_fundiario -v ON_ERROR_STOP=1 -f "$f"; done
+for f in db/migrations/*.sql; do psql -d geo_fundiario -v ON_ERROR_STOP=1 -1 -f "$f"; done
 
-# 2. Dados de demonstração (gera db/seed/seed.sql e apps/web/src/data/seed.json)
+# 2. Dados de demonstração (fictícios, sobre edificações do campus da UFV tiradas do OpenStreetMap)
 (cd services/api && uv run python scripts/gerar_seed.py)
 psql -d geo_fundiario -f db/seed/seed.sql
 
-# 3. API — http://localhost:8000/docs
+# 3. Instantâneo que a interface lê (JSON) e GeoPackage de cada núcleo
+(cd services/api && uv run python scripts/exportar_instantaneo.py)
+
+# 4. Primeiro administrador (a senha é pedida no terminal)
+(cd services/api && uv run python scripts/criar_admin.py "Seu Nome" voce@exemplo.br)
+
+# 5. API em http://localhost:8000/docs
 (cd services/api && uv run uvicorn geo_fundiario.main:app --reload --port 8000)
 
-# 4. Interface — http://localhost:3000
-(cd apps/web && npm install && npm run dev)
+# 6. Interface em http://localhost:3000, ligada à API (login, edição e leitura ao vivo)
+(cd apps/web && npm install && NEXT_PUBLIC_API_URL=http://localhost:8000 GEOF_API_URL=http://localhost:8000 npm run dev)
 ```
 
-A interface funciona sem a API (lê `src/data/seed.json`); a API funciona sem a interface.
+**O banco é a única fonte de dados.** Sem `GEOF_API_URL`, a interface lê o instantâneo exportado do banco
+(`apps/web/src/data/instantaneo.json`); é assim que a demonstração estática funciona. Sem
+`NEXT_PUBLIC_API_URL`, ela fica somente de leitura.
 
 Verificação:
 
@@ -73,9 +83,11 @@ Verificação:
 (cd apps/web && npm run typecheck && npm run lint && npm run build)
 ```
 
+Segurança, perfis de acesso e passos para produção: [docs/seguranca.md](docs/seguranca.md).
+
 ## Demonstração pública
 
-O fluxo `.github/workflows/pages.yml` publica a interface como site estático no GitHub Pages a cada push em `main` (`NEXT_OUTPUT=export`). Ative **Settings → Pages → Source: GitHub Actions** no repositório. Para gerar localmente: `NEXT_OUTPUT=export NEXT_BASE_PATH=/<nome-do-repo> npm run build` em `apps/web` (saída em `out/`).
+O fluxo `.github/workflows/pages.yml` publica a interface como site estático, somente de leitura, no GitHub Pages a cada push em `main` (`NEXT_OUTPUT=export`). Ative **Settings → Pages → Source: GitHub Actions** no repositório. Para gerar localmente: `NEXT_OUTPUT=export NEXT_BASE_PATH=/<nome-do-repo> npm run build` em `apps/web` (saída em `out/`).
 
 ## Próximos passos
 

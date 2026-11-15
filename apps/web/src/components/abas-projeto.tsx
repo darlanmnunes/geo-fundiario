@@ -13,22 +13,16 @@ const ABAS = [
 ];
 
 export function AbasProjeto() {
-  const caminho = usePathname();
+  const caminho = usePathname().replace(/\/$/, "");
   const base = caminho.split("/").slice(0, 3).join("/");
   return (
-    <nav className="-mb-px flex gap-5 overflow-x-auto" aria-label="Seções do núcleo">
+    <nav className="-mb-px flex gap-1 overflow-x-auto" aria-label="Seções do núcleo">
       {ABAS.map((a) => {
         const href = base + a.sufixo;
-        const ativoFinal = a.sufixo === "" ? caminho === base : caminho.startsWith(href);
+        const ativa = a.sufixo === "" ? caminho === base : caminho.startsWith(href);
         return (
-          <Link
-            key={a.sufixo}
-            href={href}
-            className={clsx(
-              "border-b-2 py-2 text-[13px] whitespace-nowrap transition-colors",
-              ativoFinal ? "border-terra-600 font-medium text-tinta-900" : "border-transparent text-tinta-500 hover:text-tinta-900",
-            )}
-          >
+          <Link key={a.sufixo} href={href} aria-current={ativa ? "page" : undefined}
+            className={clsx("border-b-[3px] px-3 py-2 text-[14px] whitespace-nowrap transition-colors", ativa ? "border-azul font-semibold text-azul" : "border-transparent text-texto-2 hover:border-borda-forte hover:text-texto")}>
             {a.rotulo}
           </Link>
         );

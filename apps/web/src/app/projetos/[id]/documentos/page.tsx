@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 import clsx from "clsx";
-import { FileText, PenLine, QrCode } from "lucide-react";
+import { FileText, PenLine } from "lucide-react";
 import { CaixaMemorial } from "@/components/caixa-memorial";
-import { Carimbo, Carregando, Painel, Rotulo } from "@/components/ui";
+import { Carregando, Etiqueta, Painel } from "@/components/ui";
 import { obterProjeto } from "@/lib/dados";
-import { FASES, fmt, METODO_ASSINATURA, SITUACAO_PECA, TIPO_DOCUMENTO, TIPOS_PECA } from "@/lib/dominio";
+import { FASES, fmt, METODO_ASSINATURA, NORMAS, SITUACAO_PECA, TIPO_DOCUMENTO, TIPOS_PECA } from "@/lib/dominio";
 
 export const metadata = { title: "Documentos e peças" };
 
@@ -16,74 +16,71 @@ async function Conteudo({ params }: Pick<PageProps<"/projetos/[id]/documentos">,
   const porFase = FASES.map((f) => ({ fase: f, docs: p.documentos.filter((d) => d.fase === f.codigo) })).filter((x) => x.docs.length);
 
   return (
-    <div className="grid gap-5 xl:grid-cols-5">
-      <div className="space-y-5 xl:col-span-3">
-        <Painel titulo="Autos do processo administrativo" aside={`${p.documentos.length} documentos · cada um com código de verificação pública`} corpo="p-0">
+    <div className="grid gap-4 xl:grid-cols-5">
+      <div className="space-y-4 xl:col-span-3">
+        <Painel titulo="Autos do processo administrativo" aside={`${p.documentos.length} documentos, cada um com código de verificação pública`} corpo="p-0">
           {porFase.map(({ fase, docs }) => (
-            <div key={fase.codigo} className="border-b fio last:border-b-0">
-              <div className="flex items-baseline gap-2 bg-papel-100/60 px-4 py-1.5">
-                <span className="tab text-[11px] text-tinta-500">{String(FASES.indexOf(fase) + 1).padStart(2, "0")}</span>
-                <span className="text-[12.5px] font-medium">{fase.nome}</span>
-              </div>
-              <ul className="divide-y divide-[color:var(--linha)]">
+            <section key={fase.codigo} className="border-b border-borda last:border-b-0">
+              <h3 className="bg-realce px-3.5 py-1.5 text-[13px] font-semibold text-texto-2">Fase {FASES.indexOf(fase) + 1}: {fase.nome}</h3>
+              <ul className="divide-y divide-borda">
                 {docs.map((d) => {
                   const pend = d.assinaturas.filter((a) => a.situacao === "pendente").length;
                   return (
-                    <li key={d.id} id={d.id} className="scroll-mt-24 px-4 py-3">
-                      <div className="flex items-start gap-3">
-                        <FileText className="mt-0.5 size-4 shrink-0 text-tinta-300" />
+                    <li key={d.id} id={d.id} className="scroll-mt-28 px-3.5 py-2.5 target:bg-azul-claro">
+                      <div className="flex items-start gap-2.5">
+                        <FileText className="mt-0.5 size-4 shrink-0 text-texto-3" aria-hidden />
                         <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="text-[13.5px] font-medium text-tinta-900">{d.titulo}</p>
-                            <Carimbo tom={d.origem === "emitido" ? "terra" : "neutro"}>{d.origem === "emitido" ? "emitido pelo sistema" : TIPO_DOCUMENTO[d.tipo]}</Carimbo>
-                          </div>
-                          <p className="mono mt-0.5 text-[11.5px] text-tinta-500">
-                            {fmt.data(d.data)} · {d.paginas} p. · {fmt.kb(d.tamanho_kb)} · <QrCode className="inline size-3" /> {d.codigo_verificacao}
+                          <p className="text-[14px] font-semibold">{d.titulo}</p>
+                          <p className="mt-0.5 text-[12.5px] text-texto-3">
+                            {d.origem === "emitido" ? "Emitido pelo sistema" : TIPO_DOCUMENTO[d.tipo]}, {fmt.data(d.data)}, {d.paginas} {d.paginas === 1 ? "página" : "páginas"}, {fmt.kb(d.tamanho_kb)}. Verificação: <span className="cod text-texto-2">{d.codigo_verificacao}</span>
                           </p>
                           {d.assinaturas.length > 0 && (
                             <ul className="mt-1.5 space-y-0.5">
                               {d.assinaturas.map((a) => (
-                                <li key={a.nome + a.papel} className="flex flex-wrap items-center gap-x-2 text-[12px]">
-                                  <PenLine className={clsx("size-3", a.situacao === "assinado" ? "text-oliva-700" : "text-ocre-700")} />
-                                  <span className="text-tinta-900">{a.nome}</span>
-                                  <span className="text-tinta-500">{a.papel} · {METODO_ASSINATURA[a.metodo]}</span>
-                                  <span className={clsx("tab", a.situacao === "assinado" ? "text-oliva-700" : "text-ocre-700")}>{a.situacao === "assinado" ? `assinado em ${fmt.data(a.em)}` : "aguardando assinatura"}</span>
+                                <li key={a.nome + a.papel} className="flex flex-wrap items-center gap-x-2 text-[13px]">
+                                  <PenLine className={clsx("size-3.5", a.situacao === "assinado" ? "text-verde" : "text-ambar")} aria-hidden />
+                                  <span>{a.nome}</span>
+                                  <span className="text-texto-3">{a.papel}, {METODO_ASSINATURA[a.metodo]}</span>
+                                  <span className={a.situacao === "assinado" ? "text-verde" : "font-semibold text-ambar"}>{a.situacao === "assinado" ? `assinado em ${fmt.data(a.em)}` : "aguardando assinatura"}</span>
                                 </li>
                               ))}
                             </ul>
                           )}
                         </div>
-                        {pend > 0 && <Carimbo tom="ocre">{pend} assinatura pendente</Carimbo>}
+                        {pend > 0 && <Etiqueta tom="ambar">{pend} assinatura{pend > 1 ? "s" : ""} pendente{pend > 1 ? "s" : ""}</Etiqueta>}
                       </div>
                     </li>
                   );
                 })}
               </ul>
-            </div>
+            </section>
           ))}
-          {!porFase.length && <p className="p-6 text-[13px] text-tinta-500">Nenhum documento juntado.</p>}
+          {!porFase.length && <p className="p-4 text-[13.5px] text-texto-2">Nenhum documento juntado ainda. Os documentos entram pelos autos de cada fase.</p>}
         </Painel>
 
-        <Painel titulo="Memorial descritivo do perímetro do núcleo">
-          <CaixaMemorial texto={p.memorial_perimetro} arquivo={`memorial-perimetro-${p.id}.txt`} />
+        <Painel titulo="Memorial descritivo do perímetro do núcleo" aside="Gerado dos vértices do perímetro">
+          <CaixaMemorial texto={p.memorial_perimetro} arquivo={`memorial-perimetro-nucleo-${p.id}`} />
         </Painel>
       </div>
 
-      <Painel className="xl:col-span-2 self-start" titulo="Peças do projeto (art. 35) e CRF" aside={`${prontas}/${tipos.length} prontas`} corpo="p-0">
-        <ul className="divide-y divide-[color:var(--linha)]">
+      <Painel className="self-start xl:col-span-2" titulo="Peças do projeto e CRF" aside={`${prontas} de ${tipos.length} prontas`} corpo="p-0">
+        <ul className="divide-y divide-borda">
           {tipos.map(([k, t]) => {
             const s = SITUACAO_PECA[estado[k] ?? "pendente"];
             return (
-              <li key={k} className="flex items-start justify-between gap-3 px-4 py-2.5">
+              <li key={k} className="flex items-start justify-between gap-3 px-3.5 py-2">
                 <div className="min-w-0">
-                  <p className={clsx("text-[13px]", estado[k] ? "text-tinta-900" : "text-tinta-500")}>{t.nome}</p>
-                  <Rotulo className="mt-0.5 normal-case tracking-normal">Lei 13.465/2017, {t.baseLegal}{t.artRrt ? " · ART/RRT" : ""}</Rotulo>
+                  <p className={clsx("text-[13.5px]", estado[k] ? "text-texto" : "text-texto-2")}>{t.nome}</p>
+                  <p className="text-[12.5px] text-texto-3">{t.baseLegal}{t.artRrt ? ", exige ART/RRT" : ""}</p>
                 </div>
-                <span className={clsx("carimbo", s.classe)}>{s.rotulo}</span>
+                <Etiqueta tom={s.tom}>{s.rotulo}</Etiqueta>
               </li>
             );
           })}
         </ul>
+        <p className="border-t border-borda px-3.5 py-2.5 text-[12.5px] text-texto-3">
+          Peças exigidas pelos arts. 35 e 41 da <a className="text-azul hover:underline" href={NORMAS.lei13465.url} target="_blank" rel="noreferrer">Lei 13.465/2017</a>.
+        </p>
       </Painel>
     </div>
   );
