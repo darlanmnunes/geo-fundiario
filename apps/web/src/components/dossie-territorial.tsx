@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
-import { ArrowRight, ExternalLink, RefreshCw } from "lucide-react";
+import { ArrowRight, ExternalLink, MapPinned, RefreshCw } from "lucide-react";
 import { Mapa } from "./mapa";
 import { Etiqueta, classeBotao } from "./ui";
 import type { CamadasMapa } from "@/lib/dados";
@@ -17,25 +17,41 @@ export function DossieTerritorial({ nucleos, camadas }: { nucleos: NucleoDossie[
   const [id, setId] = useState(nucleos[0]?.id ?? 0);
   const [so, setSo] = useState<Severidade | null>(null);
   // Achados consultados agora nas fontes ligadas (substituem os gravados, por tema, enquanto a página está aberta)
-  const [aoVivo, setAoVivo] = useState<Record<number, { em: string; achados: Dossie["achados"] }>>({});
+  const [aoVivo, setAoVivo] = useState<Record<number, { em: string; achados: Dossie["achados"]; previstos: { camada: string; fonte: string }[] }>>({});
+  const [noMapa, setNoMapa] = useState<string | null>(null);
   const [consulta, setConsulta] = useState<"parado" | "consultando" | string>("parado");
+  // Com a API ligada, relê o dossiê gravado: ele pode ter sido atualizado pelo Diagnóstico territorial.
+  const [gravadosAgora, setGravadosAgora] = useState<Record<number, Dossie>>({});
+  useEffect(() => {
+    if (!TEM_API) return;
+    let vivo = true;
+    api<Dossie>(`/projetos/${id}/dossie`).then((x) => vivo && setGravadosAgora((g) => ({ ...g, [id]: x })), () => undefined);
+    return () => { vivo = false; };
+  }, [id]);
   const n = nucleos.find((x) => x.id === id) ?? nucleos[0];
-  const d = n?.dossie;
+  const d = gravadosAgora[id] ?? n?.dossie;
   const vivos = aoVivo[id]?.achados ?? [];
   const consultar = async () => {
     setConsulta("consultando");
     try {
-      const resp = await api<{ consultado_em: string; achados: Dossie["achados"] }>(`/projetos/${id}/diagnostico`);
-      setAoVivo((a) => ({ ...a, [id]: { em: resp.consultado_em, achados: resp.achados } }));
+      const resp = await api<{ consultado_em: string; achados: Dossie["achados"]; previstos?: { camada: string; fonte: string }[] }>(`/projetos/${id}/diagnostico`);
+      setAoVivo((a) => ({ ...a, [id]: { em: resp.consultado_em, achados: resp.achados, previstos: resp.previstos ?? [] } }));
       setConsulta("parado");
     } catch (e) {
       setConsulta(e instanceof Error ? e.message : "A consulta falhou.");
     }
   };
-  const achados = d ? d.achados.map((a) => vivos.find((v) => v.camada === a.camada) ?? a).sort((a, b) => ORDEM_SEVERIDADE.indexOf(a.severidade) - ORDEM_SEVERIDADE.indexOf(b.severidade)) : [];
+  // Os temas consultados agora substituem os gravados de mesmo nome; os que o dossiê gravado não tinha entram no fim.
+  const gravados = d?.achados ?? [];
+  const mesmo = (a: Dossie["achados"][number], b: Dossie["achados"][number]) => (a.codigo && b.codigo ? a.codigo === b.codigo : a.camada === b.camada);
+  const respondidos = vivos.filter((v) => v.severidade !== "sem_dado" || !gravados.some((g) => mesmo(g, v)));
+  const achados = d ? [...gravados.map((a) => respondidos.find((v) => mesmo(v, a)) ?? a), ...respondidos.filter((v) => !gravados.some((g) => mesmo(g, v)))].sort((a, b) => ORDEM_SEVERIDADE.indexOf(a.severidade) - ORDEM_SEVERIDADE.indexOf(b.severidade)) : [];
   const contagem = (s: Severidade) => achados.filter((a) => a.severidade === s).length;
   const visiveis = achados.filter((a) => !so || a.severidade === so);
+  const evidencias: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: vivos.filter((v) => !noMapa || v.camada === noMapa).flatMap((v) => v.evidencias ?? []) };
+  const semResposta = vivos.filter((v) => v.severidade === "sem_dado").map((v) => v.camada);
   const trocar = (novo: number) => {
+    setNoMapa(null);
     setConsulta("parado");
     setId(novo);
     setSo(null);
@@ -52,9 +68,9 @@ export function DossieTerritorial({ nucleos, camadas }: { nucleos: NucleoDossie[
             </button>
           ))}
         </div>
-        <Mapa camadas={camadas} foco={id} aoSelecionar={(uid) => uid && trocar(Number(uid.split(":")[0]))} ocultas={["logradouros"]} rotuloNucleo className="h-[420px] xl:h-[calc(100vh-15rem)] xl:min-h-[520px]" />
+        <Mapa camadas={camadas} foco={id} aoSelecionar={(uid) => uid && trocar(Number(uid.split(":")[0]))} ocultas={["logradouros"]} rotuloNucleo evidencias={evidencias} className="h-[420px] xl:h-[calc(100vh-15rem)] xl:min-h-[520px]" />
         <p className="mt-1.5 text-[12.5px] text-texto-3">
-          Em azul claro, a faixa de 30 m a partir dos corpos d&apos;água (base OpenStreetMap). Os botões à direita do mapa ligam ou desligam cada tema, trocam o mapa base e abrem a legenda.
+          Em azul claro, a faixa de 30 m a partir dos corpos d&apos;água (base OpenStreetMap). {evidencias.features.length > 0 && "Em laranja, as feições devolvidas pelas fontes consultadas agora. "}Os botões à direita do mapa ligam ou desligam cada tema, trocam o mapa base e abrem a legenda.
         </p>
       </div>
 
@@ -89,7 +105,7 @@ export function DossieTerritorial({ nucleos, camadas }: { nucleos: NucleoDossie[
                 {!TEM_API ? "Disponível na instalação com a API: os conectores ligados consultam cada fonte em tempo real."
                   : consulta === "consultando" ? "Consultando os conectores ligados."
                   : consulta !== "parado" ? consulta
-                  : aoVivo[id] ? `Atualizado às ${new Date(aoVivo[id].em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}: ${vivos.length} tema(s) ao vivo.` : "Mostrando o último dossiê gravado."}
+                  : aoVivo[id] ? `Consultado às ${new Date(aoVivo[id].em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}: ${vivos.length - semResposta.length} de ${vivos.length} fontes responderam.${semResposta.length ? ` Sem resposta agora: ${semResposta.join(", ")}.` : ""}` : "Mostrando o último dossiê gravado. A consulta leva até meio minuto; o detalhe de cada fonte fica em Diagnóstico territorial."}
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-1.5 border-b border-borda px-3.5 py-2">
@@ -118,12 +134,22 @@ export function DossieTerritorial({ nucleos, camadas }: { nucleos: NucleoDossie[
                         : <span className="text-texto-2">{a.base}.</span>)}
                     </p>
                     <p className="mt-1 text-[12.5px] leading-snug text-texto-3">
-                      Fonte: {a.fonte}. {agora ? "Consultado agora na fonte." : a.origem === "calculado" ? "Calculado sobre a geometria do núcleo." : "Valor simulado nesta demonstração."}
+                      Fonte: {a.fonte}. {agora ? "Consultado agora na fonte." : a.consultado_em ? `Consultado na fonte em ${new Date(a.consultado_em).toLocaleDateString("pt-BR")}.` : a.origem === "calculado" ? "Calculado sobre a geometria do núcleo." : "Valor simulado nesta demonstração."}
                     </p>
+                    {agora && (a.evidencias?.length ?? 0) > 0 && (
+                      <button type="button" aria-pressed={noMapa === a.camada} onClick={() => setNoMapa(noMapa === a.camada ? null : a.camada)} className="mt-1 inline-flex items-center gap-1 text-[12.5px] font-semibold text-azul hover:underline">
+                        <MapPinned className="size-3.5" aria-hidden /> {noMapa === a.camada ? "Mostrar as evidências de todos os temas" : `Ver só estas ${a.evidencias?.length} feições no mapa`}
+                      </button>
+                    )}
                   </li>
                 );
               })}
             </ul>
+            {aoVivo[id] && aoVivo[id].previstos.length > 0 && (
+              <p className="border-t border-borda px-3.5 py-2.5 text-[12.5px] leading-snug text-texto-3">
+                Ainda sem conector: {aoVivo[id].previstos.map((p) => p.camada).join(", ")}. Esses temas dependem de dado do município, de convênio ou de credencial.
+              </p>
+            )}
           </>
         ) : (
           <p className="p-4 text-[13.5px] text-texto-2">Este núcleo ainda não tem dossiê. Ele é gerado quando o perímetro preliminar é cadastrado.</p>

@@ -83,6 +83,25 @@ def listar_ids() -> list[int]:
     return [r["id"] for r in consulta("select id from reurb.projeto order by id")]
 
 
+def dossie_do_projeto(pid: int) -> dict | None:
+    """Último dossiê territorial gravado para o núcleo, com os achados na ordem do catálogo."""
+    dossie = consulta("select id, resumo, pontuacao, gerado_em from inteligencia.dossie where projeto_id = %s order by id desc limit 1", pid)
+    dossie_json = None
+    if dossie:
+        dossie_json = {
+            "resumo": dossie[0]["resumo"],
+            "pontuacao": dossie[0]["pontuacao"],
+            "achados": consulta(
+                """select a.camada_codigo codigo, coalesce(c.nome, a.camada_nome) camada, coalesce(c.fontes_descricao, '') fonte, a.resultado, a.severidade,
+                          a.implicacao, a.base_legal base, a.origem, a.metricas->>'consultado_em' consultado_em
+                     from inteligencia.achado a left join inteligencia.camada c on c.codigo = a.camada_codigo
+                    where a.dossie_id = %s order by c.ordem, a.id""",
+                dossie[0]["id"],
+            ),
+        }
+    return dossie_json
+
+
 def instantaneo(pid: int) -> dict | None:
     base = consulta("select * from reurb.projeto where id = %s", pid)
     if not base:
@@ -356,20 +375,7 @@ def instantaneo(pid: int) -> dict | None:
         )
     ]
 
-    dossie = consulta("select id, resumo, pontuacao, gerado_em from inteligencia.dossie where projeto_id = %s order by id desc limit 1", pid)
-    dossie_json = None
-    if dossie:
-        dossie_json = {
-            "resumo": dossie[0]["resumo"],
-            "pontuacao": dossie[0]["pontuacao"],
-            "achados": consulta(
-                """select a.camada_nome camada, coalesce(c.fontes_descricao, '') fonte, a.resultado, a.severidade,
-                          a.implicacao, a.base_legal base, a.origem
-                     from inteligencia.achado a left join inteligencia.camada c on c.codigo = a.camada_codigo
-                    where a.dossie_id = %s order by c.ordem, a.id""",
-                dossie[0]["id"],
-            ),
-        }
+    dossie_json = dossie_do_projeto(pid)
 
     return {
         "id": p["id"],
@@ -418,7 +424,9 @@ def instantaneo(pid: int) -> dict | None:
 
 def catalogo_camadas() -> list[dict]:
     return consulta(
-        "select nome, fontes_descricao fonte, base_legal base, conector, endpoint, situacao_conector situacao from inteligencia.camada order by ordem"
+        """select c.codigo, c.nome, c.fontes_descricao fonte, c.base_legal base, c.conector, c.endpoint, c.situacao_conector situacao,
+                  c.observacao, f.orgao, f.licenca
+             from inteligencia.camada c left join inteligencia.fonte f on f.codigo = c.fonte_codigo order by c.ordem"""
     )
 
 

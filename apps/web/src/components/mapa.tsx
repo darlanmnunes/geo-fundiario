@@ -100,10 +100,14 @@ interface Props {
   /** Sobreposições desligadas ao abrir. */
   ocultas?: Sobreposicao[];
   rotuloNucleo?: boolean;
+  /** Feições devolvidas pelas fontes do diagnóstico territorial (evidências dos achados). */
+  evidencias?: GeoJSON.FeatureCollection | null;
+  /** Área de estudo livre (fora dos núcleos cadastrados): é desenhada e o mapa a enquadra. */
+  areaEstudo?: GeoJSON.Feature | null;
   className?: string;
 }
 
-export function Mapa({ camadas, destaque, selecionado, aoSelecionar, situacoes, foco = null, baseInicial = "hibrido", ocultas = ["logradouros", "app"], rotuloNucleo = false, className }: Props) {
+export function Mapa({ camadas, destaque, selecionado, aoSelecionar, situacoes, foco = null, baseInicial = "hibrido", ocultas = ["logradouros", "app"], rotuloNucleo = false, evidencias = null, areaEstudo = null, className }: Props) {
   const div = useRef<HTMLDivElement>(null);
   const mapa = useRef<maplibregl.Map | null>(null);
   const callback = useRef(aoSelecionar);
@@ -114,9 +118,9 @@ export function Mapa({ camadas, destaque, selecionado, aoSelecionar, situacoes, 
   const [busca, setBusca] = useState("");
   const [cursor, setCursor] = useState<{ lng: number; lat: number } | null>(null);
   // Estado lido de dentro dos manipuladores do mapa, que vivem mais que um render.
-  const estado = useRef({ base, visiveis, selecionado, situacoes, camadas });
+  const estado = useRef({ base, visiveis, selecionado, situacoes, camadas, evidencias, areaEstudo });
   useEffect(() => {
-    estado.current = { base, visiveis, selecionado, situacoes, camadas };
+    estado.current = { base, visiveis, selecionado, situacoes, camadas, evidencias, areaEstudo };
     callback.current = aoSelecionar;
   });
 
@@ -168,6 +172,14 @@ export function Mapa({ camadas, destaque, selecionado, aoSelecionar, situacoes, 
       m.addLayer({ id: "faixa-app-borda", type: "line", source: "faixa-app", paint: { "line-color": escura ? "#8fe0f5" : "#147a99", "line-width": 1.2, "line-dasharray": [2, 2] } });
       m.addLayer({ id: "hidro-area", type: "fill", source: "hidrografia", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": "#2aa3c7", "fill-opacity": 0.35 } });
       m.addLayer({ id: "hidro-linha", type: "line", source: "hidrografia", filter: ["==", ["geometry-type"], "LineString"], paint: { "line-color": escura ? "#8fe0f5" : "#147a99", "line-width": 1.6 } });
+      const VAZIO: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
+      m.addSource("evidencias", { type: "geojson", data: estado.current.evidencias ?? VAZIO });
+      m.addSource("area-estudo", { type: "geojson", data: estado.current.areaEstudo ?? VAZIO });
+      m.addLayer({ id: "area-estudo-fundo", type: "fill", source: "area-estudo", paint: { "fill-color": "#1351b4", "fill-opacity": 0.08 } });
+      m.addLayer({ id: "area-estudo", type: "line", source: "area-estudo", paint: { "line-color": escura ? "#ffe066" : "#1351b4", "line-width": 2.4, "line-dasharray": [3, 2] } });
+      m.addLayer({ id: "evid-area", type: "fill", source: "evidencias", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": "#c2410c", "fill-opacity": 0.14 } });
+      m.addLayer({ id: "evid-linha", type: "line", source: "evidencias", filter: ["!=", ["geometry-type"], "Point"], paint: { "line-color": escura ? "#ffb37a" : "#c2410c", "line-width": 1.8 } });
+      m.addLayer({ id: "evid-ponto", type: "circle", source: "evidencias", filter: ["==", ["geometry-type"], "Point"], paint: { "circle-radius": 5, "circle-color": "#c2410c", "circle-stroke-color": "#ffffff", "circle-stroke-width": 1.5 } });
       m.addLayer({ id: "perimetros", type: "line", source: "perimetros", paint: { "line-color": escura ? "#ffe066" : "#b8251a", "line-width": 2.2, "line-dasharray": [3, 2] } });
       m.addLayer({ id: "quadras", type: "line", source: "quadras", paint: { "line-color": traco, "line-width": 1.2, "line-opacity": 0.75 } });
       m.addLayer({ id: "logradouros", type: "line", source: "logradouros", paint: { "line-color": traco, "line-width": 1, "line-opacity": 0.5, "line-dasharray": [6, 3] } });
@@ -333,6 +345,24 @@ export function Mapa({ camadas, destaque, selecionado, aoSelecionar, situacoes, 
   useEffect(() => {
     (mapa.current?.getSource("lotes") as GeoJSONSource | undefined)?.setData(camadas.lotes);
   }, [camadas.lotes]);
+
+  useEffect(() => {
+    (mapa.current?.getSource("evidencias") as GeoJSONSource | undefined)?.setData(evidencias ?? { type: "FeatureCollection", features: [] });
+  }, [evidencias]);
+
+  useEffect(() => {
+    const m = mapa.current;
+    if (!m) return;
+    const aplicar = () => {
+      (m.getSource("area-estudo") as GeoJSONSource | undefined)?.setData(areaEstudo ?? { type: "FeatureCollection", features: [] });
+      if (!areaEstudo) return;
+      alvoAtual.current = () => areaEstudo;
+      const b = limites(areaEstudo);
+      if (!b.isEmpty()) m.fitBounds(b, { padding: 60, maxZoom: 18, duration: 500 });
+    };
+    if (m.getSource("area-estudo")) aplicar();
+    else m.once("idle", aplicar);
+  }, [areaEstudo]);
 
   const termo = busca.trim().toLowerCase();
   const achados = termo.length >= 2

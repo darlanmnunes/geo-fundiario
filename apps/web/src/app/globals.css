@@ -81,7 +81,13 @@ a {
   font-size: 0.94em;
 }
 
+/* Filho de grade não pode alargar a página: sem isto, uma tabela larga empurra a coluna além da tela. */
+.grid > * {
+  min-width: 0;
+}
+
 .painel {
+  min-width: 0;
   background: var(--color-superficie);
   border: 1px solid var(--color-borda);
   border-radius: 4px;

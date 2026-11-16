@@ -76,7 +76,7 @@ export function BarraSuperior({ projetos }: Props) {
       href={href}
       aria-current={ativo ? "page" : undefined}
       className={clsx(
-        "flex h-12 items-center border-b-[3px] px-3 text-[14px] whitespace-nowrap transition-colors",
+        "flex h-10 items-center border-b-[3px] px-3 text-[14px] whitespace-nowrap transition-colors lg:h-12",
         ativo ? "border-[#ffd23d] font-semibold text-white" : "border-transparent text-white/80 hover:bg-white/10 hover:text-white",
       )}
     >
@@ -86,12 +86,12 @@ export function BarraSuperior({ projetos }: Props) {
 
   return (
     <header className="sticky top-0 z-30 bg-marinho text-white">
-      <div className="mx-auto flex h-12 w-full max-w-[1680px] items-center gap-3 px-4 sm:px-6">
+      <div className="mx-auto flex min-h-12 w-full max-w-[1680px] flex-wrap items-center gap-x-3 px-4 sm:px-6">
         <Marca />
-        <nav aria-label="Principal" className="ml-3 flex min-w-0 flex-1 items-center overflow-x-auto">
+        <nav aria-label="Principal" className="order-last -mx-4 flex min-w-0 basis-[calc(100%+2rem)] items-center overflow-x-auto border-t border-white/15 px-1 sm:-mx-6 sm:basis-[calc(100%+3rem)] sm:px-3 lg:order-none lg:mx-0 lg:ml-3 lg:flex-1 lg:basis-0 lg:border-t-0 lg:px-0">
           {item("/", caminho === "/", "Visão geral")}
           <div className="group relative">
-            <button type="button" aria-haspopup="true" className={clsx("flex h-12 items-center border-b-[3px] px-3 text-[14px] whitespace-nowrap", emNucleo ? "border-[#ffd23d] font-semibold text-white" : "border-transparent text-white/80 hover:bg-white/10 hover:text-white")}>
+            <button type="button" aria-haspopup="true" className={clsx("flex h-10 items-center border-b-[3px] px-3 lg:h-12 text-[14px] whitespace-nowrap", emNucleo ? "border-[#ffd23d] font-semibold text-white" : "border-transparent text-white/80 hover:bg-white/10 hover:text-white")}>
               Núcleos
             </button>
             <ul className="invisible fixed z-40 mt-0 min-w-60 rounded-b border border-t-0 border-borda-forte bg-superficie py-1 text-texto opacity-0 shadow-[0_6px_16px_rgb(27_36_48/0.2)] transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
@@ -102,13 +102,14 @@ export function BarraSuperior({ projetos }: Props) {
               ))}
             </ul>
           </div>
+          {item("/diagnostico", caminho.startsWith("/diagnostico"), "Diagnóstico territorial")}
           {item("/inteligencia", caminho.startsWith("/inteligencia"), "Inteligência territorial")}
           {item("/legislacao", caminho.startsWith("/legislacao"), "Base legal")}
         </nav>
         <button
           type="button"
           onClick={abrirBusca}
-          className="flex h-8 shrink-0 items-center gap-2 rounded border border-white/25 bg-white/10 px-2.5 text-[13px] text-white/90 hover:bg-white/20"
+          className="ml-auto flex h-8 shrink-0 items-center gap-2 rounded border border-white/25 bg-white/10 px-2.5 text-[13px] text-white/90 hover:bg-white/20 lg:ml-0"
           aria-label="Buscar lote, pessoa, fase ou documento"
         >
           <Search className="size-4" aria-hidden />

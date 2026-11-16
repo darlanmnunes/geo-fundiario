@@ -21,7 +21,7 @@ export function Rodape({ origem }: { origem: { viaApi: boolean; ultimaAlteracao:
             <p className="mt-1 leading-relaxed">
               Desenvolvido pelo GPGeoIA - Grupo de Pesquisa em Inteligência Artificial Geoespacial da Universidade Federal de Viçosa (UFV).
             </p>
-            <p className="leading-relaxed">Responsável: Prof. Dr. Darlan Miranda Nunes.</p>
+            <p className="leading-relaxed">Responsável: Prof. Dr. Darlan Miranda Nunes (<a href="https://orcid.org/0000-0001-5566-7919" target="_blank" rel="noreferrer" className="text-azul hover:underline">ORCID 0000-0001-5566-7919</a>).</p>
             <p className="mt-1 leading-relaxed text-texto-3">
               Dados de demonstração fictícios, simulados sobre edificações do campus da UFV. Nenhum desses prédios está em regularização fundiária.
             </p>

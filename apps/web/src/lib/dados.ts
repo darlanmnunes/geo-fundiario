@@ -126,8 +126,22 @@ interface Pacote {
   aviso: string;
   origem: string;
   ultima_alteracao: string | null;
-  camadas: { nome: string; fonte: string; base: string; conector: string | null; endpoint: string | null; situacao: "ao_vivo" | "previsto" }[];
+  camadas: CamadaCatalogo[];
   projetos: Projeto[];
+}
+
+/** Tema do diagnóstico territorial, como está no catálogo do banco (inteligencia.camada). */
+export interface CamadaCatalogo {
+  codigo?: string;
+  nome: string;
+  fonte: string;
+  base: string;
+  conector: string | null;
+  endpoint: string | null;
+  situacao: "ao_vivo" | "previsto";
+  observacao?: string | null;
+  orgao?: string | null;
+  licenca?: string | null;
 }
 
 async function carregar(): Promise<Pacote & { viaApi: boolean }> {
@@ -285,6 +299,7 @@ function chave(...partes: (string | number | null | undefined)[]) {
 export function indiceBusca(): ItemBusca[] {
   const itens: ItemBusca[] = [
     { tipo: "pagina", titulo: "Visão geral", detalhe: "Painel de todos os núcleos, prazos e pendências", href: "/", chave: "visao geral painel inicio dashboard" },
+    { tipo: "pagina", titulo: "Diagnóstico territorial", detalhe: "Consulta às fontes oficiais sobre um núcleo ou uma área livre", href: "/diagnostico", chave: "diagnostico territorial fontes sicar ibge sigef car risco area estudo" },
     { tipo: "pagina", titulo: "Inteligência territorial", detalhe: "Dossiê de cada área a partir de camadas públicas", href: "/inteligencia", chave: "inteligencia territorial dossie" },
     { tipo: "pagina", titulo: "Base legal", detalhe: "Fases do processo, leis e normas", href: "/legislacao", chave: "base legal lei 13465 normas legislacao" },
     { tipo: "pagina", titulo: "Assistente IA", detalhe: "Perguntas ao banco em linguagem natural", href: "/assistente", chave: "assistente consulta chat pergunta" },

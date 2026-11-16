@@ -10,6 +10,8 @@
   &nbsp;|&nbsp;
   <a href="docs/marco-legal-e-fluxo-reurb.md">Marco legal</a>
   &nbsp;|&nbsp;
+  <a href="docs/diagnostico-territorial.md">Diagnóstico territorial</a>
+  &nbsp;|&nbsp;
   <a href="docs/seguranca.md">Segurança</a>
   &nbsp;|&nbsp;
   <a href="#como-rodar">Como rodar</a>
@@ -55,7 +57,8 @@ O primeiro módulo é a **Regularização Fundiária Urbana (REURB)**, conforme 
 | **Levantamento** | Controle de qualidade por vértice contra a tolerância da norma do projeto: 8 cm tridimensional na REURB (Dec. 9.310/2018, art. 29) ou os limites planimétricos do georreferenciamento rural. |
 | **Notificações** | Art. 31: destinatário, meio, ciência, prazo de 30 dias e resposta. |
 | **Documentos** | Autos do processo por fase, com código de verificação pública e assinaturas. |
-| **Inteligência territorial** | Dossiê de cada núcleo por tema (APP, risco, marco temporal, matrículas, unidades de conservação e outros), com base legal e fonte em cada achado. |
+| **Diagnóstico territorial** | Consulta em tempo real a 11 fontes oficiais sobre um núcleo ou sobre qualquer polígono importado: sobreposições, distâncias e restrições, com as feições que sustentam cada resultado no mapa. Exige a instalação com a API. [Como funciona](docs/diagnostico-territorial.md). |
+| **Inteligência territorial** | Dossiê de cada núcleo por tema, com severidade, base legal e fonte em cada achado e nota de aptidão. É alimentado pelo diagnóstico. |
 | **Base legal** | As dez fases com os artigos que as regem e link para o texto de cada lei e norma. |
 | **Acesso** | Login por perfil (leitor, editor, administrador); cada gravação fica na auditoria com o autor. |
 | **Assistente IA** | Estrutura para perguntas em linguagem natural ao banco, por um papel somente leitura sobre visões sem dado pessoal. |
@@ -95,7 +98,7 @@ O banco é a única fonte de dados. A demonstração estática lê um instantân
 | `reurb` | Projetos, fases com prazos legais, situação das unidades, pendências, notificações (Lei 13.465/2017) |
 | `campo` | Levantamento e cadastro social |
 | `documentos` | Anexos, versões, assinaturas e código de verificação |
-| `inteligencia` | Catálogo de camadas, conectores, dossiês e achados |
+| `inteligencia` | Catálogo de temas e fontes, conectores, dossiês e achados |
 | `metadados` | Conjuntos de dados no Perfil MGB 2.0 e correspondência com a INDE |
 | `acesso` | Usuários, perfis e sessões |
 | `consulta` | Visões somente leitura, sem dado pessoal, para o Assistente IA |
@@ -159,15 +162,15 @@ Para gerar o site localmente: `NEXT_OUTPUT=export NEXT_BASE_PATH=/<nome-do-repo>
 | Módulo | Situação |
 |---|---|
 | REURB, regularização fundiária urbana | protótipo funcional |
-| Inteligência territorial | hidrografia consultada ao vivo (OpenStreetMap); demais temas simulados |
+| Diagnóstico territorial | 11 temas consultados ao vivo em fontes oficiais (IBGE, ANA, SGB, SICAR, INCRA, ICMBio, FUNAI, ANM, DNIT, ANEEL, IPHAN); os demais são simulados na demonstração |
 | Cadastro territorial multifinalitário, regularização rural, georreferenciamento de imóveis | planejados |
 
-1. Módulo de diagnóstico territorial com conectores às fontes oficiais.
+1. Diagnóstico territorial: desenhar a área de estudo no mapa, relatório em PDF e as fontes que faltam (SIGEF, MapBiomas, UCs estaduais).
 2. Importação de levantamentos (CSV de GNSS e estação total, GeoPackage, DXF) pelo navegador.
 3. Peças em PDF com QR de verificação: CRF, listagem de ocupantes, notificações, edital.
 4. Projeto QGIS pronto junto do GeoPackage.
 5. Aplicativo de campo offline para cadastro socioeconômico e coleta.
-6. Integração com o Registro de Imóveis (ONR/SAEC) quando o leiaute oficial for verificado.
+6. Exportador para o SINTER (Cadastro Imobiliário Brasileiro) e integração com o Registro de Imóveis (ONR/SAEC), depois de conferidos os leiautes oficiais.
 
 ## Autoria
 
@@ -175,7 +178,7 @@ Para gerar o site localmente: `NEXT_OUTPUT=export NEXT_BASE_PATH=/<nome-do-repo>
 
 Desenvolvido pelo **[GPGeoIA - Grupo de Pesquisa em Inteligência Artificial Geoespacial](http://dgp.cnpq.br/dgp/espelhogrupo/833723)** da Universidade Federal de Viçosa (UFV), registrado no Diretório dos Grupos de Pesquisa do CNPq.
 
-Responsável: Prof. Dr. Darlan Miranda Nunes.
+Responsável: Prof. Dr. Darlan Miranda Nunes <a href="https://orcid.org/0000-0001-5566-7919"><img src="https://img.shields.io/badge/ORCID-0000--0001--5566--7919-a6ce39?logo=orcid&logoColor=white" alt="ORCID 0000-0001-5566-7919" align="center"></a>
 
 <br clear="left">
 

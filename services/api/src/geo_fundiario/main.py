@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import PlainTextResponse
+from pydantic import BaseModel, Field
 from shapely import wkb
 
 from geo_fundiario import acesso, assistente, diagnostico, documentos, edicao, gpkg
@@ -109,6 +110,45 @@ def diagnostico_ao_vivo(projeto_id: int):
     if not resultado:
         raise HTTPException(404, "Projeto sem perímetro cadastrado")
     return resultado
+
+
+@app.post("/projetos/{projeto_id}/diagnostico/gravar")
+def diagnostico_gravar(projeto_id: int, usuario: acesso.Usuario | None = exigir("escrita")):
+    """Consulta as fontes agora e grava os achados no dossiê do núcleo (alimenta a Inteligência territorial)."""
+    resultado = diagnostico.gravar_no_dossie(projeto_id, usuario.email if usuario else None)
+    if not resultado:
+        raise HTTPException(404, "Projeto sem perímetro cadastrado")
+    return resultado
+
+
+@app.get("/projetos/{projeto_id}/dossie", dependencies=[exigir("leitura")])
+def dossie(projeto_id: int):
+    """Último dossiê territorial gravado para o núcleo."""
+    from geo_fundiario.instantaneo import dossie_do_projeto
+
+    achado = dossie_do_projeto(projeto_id)
+    if achado is None:
+        raise HTTPException(404, "Núcleo sem dossiê")
+    return achado
+
+
+class AreaDeEstudo(BaseModel):
+    """Polígono em GeoJSON (longitude, latitude; SIRGAS 2000 ou WGS 84)."""
+
+    geometria: dict
+    uf: str | None = Field(default=None, min_length=2, max_length=2)
+    municipio_ibge: str | None = Field(default=None, pattern=r"^\d{7}$")
+
+
+@app.post("/diagnostico/area", dependencies=[exigir("leitura")])
+def diagnostico_de_area(corpo: AreaDeEstudo):
+    """Diagnóstico de uma área de estudo livre, sem núcleo cadastrado. Nada é gravado."""
+    if len(str(corpo.geometria)) > 400_000:
+        raise HTTPException(413, "Geometria grande demais; simplifique o polígono")
+    try:
+        return diagnostico.diagnosticar_geojson(corpo.geometria, corpo.uf, corpo.municipio_ibge)
+    except (ValueError, KeyError, TypeError, AttributeError) as erro:
+        raise HTTPException(422, str(erro) if isinstance(erro, ValueError) else "Geometria inválida") from None
 
 
 @app.get("/projetos/{projeto_id}/geopackage", dependencies=[exigir("leitura")])

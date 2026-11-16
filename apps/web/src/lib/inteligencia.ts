@@ -4,6 +4,8 @@ import type { Tom } from "./dominio";
 export type Severidade = "impede" | "condiciona" | "atencao" | "ok" | "sem_dado";
 
 export interface Achado {
+  /** Código do tema no catálogo (inteligencia.camada). */
+  codigo?: string | null;
   camada: string;
   fonte: string;
   resultado: string;
@@ -11,6 +13,22 @@ export interface Achado {
   implicacao: string | null;
   base: string | null;
   origem: "calculado" | "simulado" | "informado";
+  /** Só nos achados consultados ao vivo: feições que sustentam o resultado e tempo de resposta da fonte. */
+  evidencias?: GeoJSON.Feature[];
+  tempo_ms?: number;
+  metricas?: Record<string, unknown>;
+  /** Nos achados gravados a partir de uma consulta às fontes: quando a consulta foi feita. */
+  consultado_em?: string | null;
+}
+
+/** Resposta do diagnóstico territorial (núcleo cadastrado ou área livre). */
+export interface Diagnostico {
+  consultado_em: string;
+  achados: Achado[];
+  previstos: { codigo: string; camada: string; fonte: string }[];
+  area_ha?: number;
+  uf?: string | null;
+  municipio_ibge?: string | null;
 }
 
 export interface Dossie {
