@@ -33,7 +33,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="Geo-Fundiário API",
-    version="0.2.0",
+    version="0.3.0",
     lifespan=lifespan,
     # Em produção a documentação interativa não é publicada: ela mapeia toda a superfície da API.
     docs_url=None if cfg.producao else "/docs",

@@ -13,7 +13,7 @@ interface Props {
 
 function Marca() {
   return (
-    <Link href="/" className="flex shrink-0 items-center gap-2" aria-label="Geo-Fundiário, página inicial">
+    <a href={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/`} className="flex shrink-0 items-center gap-2" aria-label="Geo-Fundiário, página de apresentação">
       {/* Um lote em planta com um vértice marcado */}
       {/* Um lote em planta, com a diagonal de conferência e o vértice de partida marcado */}
       <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
@@ -22,7 +22,7 @@ function Marca() {
         <circle cx="19" cy="4" r="2.5" fill="#ffd23d" />
       </svg>
       <span className="text-[17px] leading-none font-bold whitespace-nowrap text-white">Geo-Fundiário</span>
-    </Link>
+    </a>
   );
 }
 
@@ -57,7 +57,7 @@ function MenuConta({ nome, email, perfil }: { nome: string; email: string; perfi
           </div>
           {perfil === "administrador" && <Link role="menuitem" href="/admin/usuarios" onClick={() => setAberto(false)} className={linha}><Users className="size-4 text-texto-3" aria-hidden /> Usuários</Link>}
           <Link role="menuitem" href="/entrar" onClick={() => setAberto(false)} className={linha}><KeyRound className="size-4 text-texto-3" aria-hidden /> Minha conta e senha</Link>
-          <button role="menuitem" type="button" onClick={async () => { setAberto(false); await sair(); router.push("/"); }} className={clsx(linha, "border-t border-borda")}><LogOut className="size-4 text-texto-3" aria-hidden /> Sair</button>
+          <button role="menuitem" type="button" onClick={async () => { setAberto(false); await sair(); router.push("/painel"); }} className={clsx(linha, "border-t border-borda")}><LogOut className="size-4 text-texto-3" aria-hidden /> Sair</button>
         </div>
       )}
     </div>
@@ -89,7 +89,7 @@ export function BarraSuperior({ projetos }: Props) {
       <div className="mx-auto flex min-h-12 w-full max-w-[1680px] flex-wrap items-center gap-x-3 px-4 sm:px-6">
         <Marca />
         <nav aria-label="Principal" className="order-last -mx-4 flex min-w-0 basis-[calc(100%+2rem)] items-center overflow-x-auto border-t border-white/15 px-1 sm:-mx-6 sm:basis-[calc(100%+3rem)] sm:px-3 lg:order-none lg:mx-0 lg:ml-3 lg:flex-1 lg:basis-0 lg:border-t-0 lg:px-0">
-          {item("/", caminho === "/", "Visão geral")}
+          {item("/painel", caminho.startsWith("/painel"), "Visão geral")}
           <div className="group relative">
             <button type="button" aria-haspopup="true" className={clsx("flex h-10 items-center border-b-[3px] px-3 lg:h-12 text-[14px] whitespace-nowrap", emNucleo ? "border-[#ffd23d] font-semibold text-white" : "border-transparent text-white/80 hover:bg-white/10 hover:text-white")}>
               Núcleos

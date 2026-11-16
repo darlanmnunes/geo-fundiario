@@ -40,7 +40,7 @@ export default function LayoutProjeto({ children, params }: LayoutProps<"/projet
       <div className="border-b border-borda bg-superficie">
         <div className="mx-auto w-full max-w-[1680px] px-4 pt-3 sm:px-6">
           <nav aria-label="Você está em" className="mb-2.5 flex flex-wrap items-center gap-2 text-[13px]">
-            <Link href="/" className={classeBotao("secundario", "h-7 px-2.5")}><ArrowLeft className="size-3.5" aria-hidden /> Visão geral</Link>
+            <Link href="/painel" className={classeBotao("secundario", "h-7 px-2.5")}><ArrowLeft className="size-3.5" aria-hidden /> Visão geral</Link>
             <ChevronRight className="size-3.5 text-texto-3" aria-hidden />
             <span className="text-texto-2">Núcleos</span>
           </nav>

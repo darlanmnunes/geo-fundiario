@@ -34,7 +34,7 @@ function MinhaConta({ nome, email, perfil }: { nome: string; email: string; perf
         <h1 className="text-[20px] font-semibold">Minha conta</h1>
         <p className="mt-2 text-[14px] text-texto-2">{nome} ({email}), perfil {PERFIL[perfil].toLowerCase()}.</p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Link href="/" className={classeBotao("primario")}>Ir para a visão geral</Link>
+          <Link href="/painel" className={classeBotao("primario")}>Ir para a visão geral</Link>
           {perfil === "administrador" && <Link href="/admin/usuarios" className={classeBotao("secundario")}>Gerenciar usuários</Link>}
           <button type="button" onClick={() => sair()} className={classeBotao("secundario")}><LogOut className="size-4" aria-hidden /> Sair</button>
         </div>
@@ -70,7 +70,7 @@ export function FormularioEntrada() {
     setErro(null);
     try {
       await entrar(String(dados.get("email")), String(dados.get("senha")));
-      router.push("/");
+      router.push("/painel");
     } catch (x) {
       setErro(x instanceof Error ? x.message : "Não foi possível entrar.");
     } finally {

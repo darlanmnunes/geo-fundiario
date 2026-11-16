@@ -14,7 +14,7 @@ export function Rodape({ origem }: { origem: { viaApi: boolean; ultimaAlteracao:
           {/* Quando o grupo tiver site, envolver o logotipo e o nome num link (SITE_GRUPO em lib/dominio.ts). */}
           <Marca href={SITE_GRUPO}>
             {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática pequena; o site é exportado sem otimizador */}
-            <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/marca/gpgeoia.png`} alt="Logotipo do GPGeoIA" width={76} height={76} className="size-[76px] shrink-0" />
+            <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/marca/gpgeoia.png`} alt="Logotipo do GPGeoIA" width={76} height={96} className="h-24 w-auto shrink-0" />
           </Marca>
           <div className="min-w-0">
             <p className="font-semibold text-texto">Geo-Fundiário</p>

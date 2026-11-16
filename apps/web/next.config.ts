@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
   env: { NEXT_PUBLIC_BASE_PATH: basePath },
   // Cabeçalhos de segurança do servidor Next (a exportação estática não os envia).
   ...(exportar ? {} : {
+    // A página de apresentação é um arquivo estático (public/index.html); no servidor Next ela responde em "/".
+    rewrites: async () => ({ beforeFiles: [{ source: "/", destination: "/index.html" }], afterFiles: [], fallback: [] }),
     headers: async () => [{
       source: "/:path*",
       headers: [

@@ -298,7 +298,7 @@ function chave(...partes: (string | number | null | undefined)[]) {
 /** Índice da busca: páginas, núcleos, unidades, ocupantes, fases e documentos. */
 export function indiceBusca(): ItemBusca[] {
   const itens: ItemBusca[] = [
-    { tipo: "pagina", titulo: "Visão geral", detalhe: "Painel de todos os núcleos, prazos e pendências", href: "/", chave: "visao geral painel inicio dashboard" },
+    { tipo: "pagina", titulo: "Visão geral", detalhe: "Painel de todos os núcleos, prazos e pendências", href: "/painel", chave: "visao geral painel inicio dashboard" },
     { tipo: "pagina", titulo: "Diagnóstico territorial", detalhe: "Consulta às fontes oficiais sobre um núcleo ou uma área livre", href: "/diagnostico", chave: "diagnostico territorial fontes sicar ibge sigef car risco area estudo" },
     { tipo: "pagina", titulo: "Inteligência territorial", detalhe: "Dossiê de cada área a partir de camadas públicas", href: "/inteligencia", chave: "inteligencia territorial dossie" },
     { tipo: "pagina", titulo: "Base legal", detalhe: "Fases do processo, leis e normas", href: "/legislacao", chave: "base legal lei 13465 normas legislacao" },

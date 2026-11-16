@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="pt-BR" data-type="software" data-radius="soft" data-ground="sage" data-buttons="solid" data-motion>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Geo-Fundiário: gestão fundiária aberta para prefeituras</title>
+<meta name="description" content="Sistema que leva cada núcleo urbano do levantamento de campo ao registro: cadastro, mapa, memorial, planta e diagnóstico territorial.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<script>if(self!==top){try{top.location.replace(self.location.href)}catch(e){document.documentElement.style.display='none'}}</script>
+<meta property="og:type" content="website">
+<meta property="og:title" content="Geo-Fundiário: gestão fundiária aberta para prefeituras">
+<meta property="og:description" content="Do levantamento de campo ao registro: cadastro, mapa, peças técnicas e diagnóstico territorial.">
+<meta property="og:image" content="apresentacao/share.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="apresentacao/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#ffffff">
+<!-- <link rel="canonical" href="https://[domínio do projeto]/"> -->
+<meta name="site-kind" content="software">
+<meta name="page-type" content="software">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/system.css">
+<link rel="stylesheet" href="assets/ui/cards.css">
+<link rel="stylesheet" href="assets/motion/motion.css">
+<link rel="stylesheet" href="assets/backgrounds/backgrounds.css">
+<link rel="stylesheet" href="assets/layout/layout.css">
+<link rel="stylesheet" href="assets/icons/icon.css">
+<style>
+:root {
+  --p-bg: #ffffff; --p-surface: #f1f3f6; --p-ink: #1b2430; --p-muted: #46505d;
+  --p-accent: #1351b4; --p-accent-ink: #ffffff; --p-action: #1351b4; --p-action-ink: #ffffff;
+  --p-inv-bg: #1b2430; --p-inv-surface: #28313d; --p-inv-ink: #ffffff; --p-inv-muted: #a0a4aa;
+  --p-inv-accent: #ffffff; --p-inv-accent-ink: #1b2430; --p-inv-action: #ffffff; --p-inv-action-ink: #1b2430;
+  --font-display: "Instrument Sans", system-ui, sans-serif;
+  --font-text: "Instrument Sans", system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --display-weight: 500;
+  --display-tracking: -0.028em;
+  --display-tracking-xl: -0.036em;
+  --display-stretch: 96%;
+  --ly-scale: 1.04;
+}
+</style>
+<link rel="stylesheet" href="assets/ui/base.css">
+<link rel="stylesheet" href="assets/diagrams/diagram.css">
+<script>document.documentElement.classList.add('m-enter');setTimeout(()=>document.documentElement.classList.add('m-enter-done'),700)</script>
+<script src="assets/backgrounds/backgrounds.js"></script>
+<script>document.documentElement.classList.add('mo-js');setTimeout(()=>document.documentElement.classList.add('mo-safe'),2500)</script>
+<link rel="modulepreload" href="assets/moments/moments.js">
+<link rel="modulepreload" href="assets/moments/lib.js">
+<link rel="modulepreload" href="assets/moments/iris-opens/moment.js">
+<link rel="modulepreload" href="assets/moments/word-highlight/moment.js">
+<!-- CSS da página: só o que fica dentro de um visual e o kit não tem -->
+<style>
+  /* a janela do sistema: barra do navegador e a captura real da tela */
+  .gf-win { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 1px rgb(27 36 48 / .12), 0 30px 70px -30px rgb(27 36 48 / .45); }
+  .gf-win__bar { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 14px; border-bottom: 1px solid rgb(27 36 48 / .1); font: 400 13px/1 var(--font-text); color: #5b6675; background: #f6f7f9; }
+  .gf-win__dots { display: flex; gap: 6px; } .gf-win__dots i { width: 10px; height: 10px; border-radius: 50%; background: #d5d9df; }
+  .gf-win__url { flex: 1; min-width: 0; height: 22px; display: flex; align-items: center; padding: 0 10px; border-radius: 6px; background: #fff; box-shadow: 0 0 0 1px rgb(27 36 48 / .1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gf-win > img { display: block; width: 100%; height: auto; }
+  /* no herói a janela vai até o pé do quadro, e a captura preenche o que sobra dela */
+  .hero__window > .gf-win { bottom: 0; display: flex; flex-direction: column; border-radius: 12px 12px 0 0; }
+  /* a captura é a página inteira do painel e rola devagar, de cima a baixo e de volta, como quem percorre a tela */
+  .hero__window > .gf-win > .gf-rolo { flex: 1 1 0; min-height: 0; overflow: hidden; container-type: size; }
+  .gf-rolo > img { display: block; width: 100%; height: auto; animation: gf-rolar 44s ease-in-out 1.5s infinite alternate; will-change: transform; }
+  @keyframes gf-rolar { 0%, 6% { transform: translateY(0); } 94%, 100% { transform: translateY(min(0px, calc(100cqh - 100%))); } }
+  @media (prefers-reduced-motion: reduce) { .gf-rolo > img { animation: none; } }
+  /* app-frame: uma janela só, do tamanho que a tela deixa */
+  .app.ui { position: relative; display: flex; flex-direction: column; margin-top: var(--s-7); background: var(--u-bg); border: 1px solid var(--u-border); border-radius: var(--u-r); box-shadow: var(--u-shadow); overflow: hidden; }
+  .app.ui > .gf-win__bar { flex: none; }
+  .app.ui > .app__pane { position: relative; flex: 1 1 0; min-height: 0; overflow: hidden; }
+  .app.ui > .app__pane > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: left top; }
+  .app.ui > .app__pane::after { content: ""; position: absolute; inset: auto 0 0 0; height: 64px; background: linear-gradient(transparent, var(--u-bg)); pointer-events: none; }
+  /* as telas do passeio por abas: a captura no canto, cortada pela direita e por baixo */
+  #pecas .frame { min-height: 588px; }
+  #pecas .gf-shot { position: absolute; left: 40px; top: 40px; width: 1120px; }
+  #pecas .gf-shot[hidden] { display: none; }
+  #pecas .tabs { margin-bottom: var(--s-5); }
+  #pecas [role=tabpanel] { min-height: 168px; display: grid; gap: var(--s-4); align-content: start; }
+  #pecas [role=tabpanel] p { font-size: var(--t-lead); line-height: 1.5; }
+  @media (max-width: 1023px) { #pecas .gf-shot { left: 24px; top: 24px; width: 900px; } #pecas .frame { min-height: 420px; } }
+  @media (max-width: 639px) { #pecas .gf-shot { left: 16px; top: 16px; width: 1150px; } #pecas [role=tabpanel] { min-height: 196px; } #pecas .frame { min-height: 620px; } }
+  #diagnostico .frame { min-height: 588px; }
+  #faq .gf-grupo { display: block; width: auto; height: 136px; margin-top: var(--s-5); }
+  @media (min-width: 1024px) { #faq .faq > .faq__item { padding-block: var(--s-7); } #faq .faq > .faq__item:first-child { padding-top: 0; } }
+  @media (max-width: 1023px) { #diagnostico .frame { min-height: 340px; --ratio: 68%; } #faq .gf-grupo { height: 72px; margin-top: var(--s-3); } #faq .muted { display: none; } }
+  /* tablet em pé e alto: as perguntas ganham ar para a seção encher a tela */
+  @media (min-width: 640px) and (max-width: 1023px) and (min-height: 1100px) { #diagnostico .frame { --ratio: 80%; } #faq .faq__item { padding-block: var(--s-6); } #faq .muted { display: block; } #faq .gf-grupo { height: 104px; margin-top: var(--s-5); } }
+  /* no celular, diagnóstico e perguntas cabem em uma tela cada: sem a lista de fatos */
+  @media (max-width: 639px) {
+    #diagnostico .frame { min-height: 0; --ratio: 76%; }
+    #diagnostico .gf-fatos { display: none; }
+    .hero .pill .muted { display: none; }
+    /* o rodapé cabe em uma tela: sem a frase do projeto e sem a linha sob o título do fecho */
+    .closing .footer__lede, .closing .close--type .section-head p, .closing__links .grid > .span-4 { display: none; }
+    #faq .link { display: none; }
+    #faq .faq__item { padding-block: var(--s-3); }
+    #faq .gf-grupo { height: 52px; margin-top: 0; }
+  }
+</style>
+</head>
+<body>
+<!-- tipo: software
+     sorteio: herói centred, nav nav-centre, fecho close-type, rodapé footer-columns, ritmo dark-band (sorteado space; trocado porque o momento iris-opens
+     precisa de uma seção em outro fundo), botões solid, marca: o ícone do próprio projeto, fundo sage, efeito grain-gradient no quadro do herói
+     paleta: as cores do sistema (azul #1351b4 sobre branco e cinza frio), tipografia instrument
+     momentos: word-highlight em #principios, iris-opens em #diagnostico -->
+
+<header class="nav nav--centre">
+  <div class="wrap nav__bar">
+    <a class="skip-link" href="#top">Ir para o conteúdo</a>
+    <a class="nav__logo" href="#top"><svg width="24" height="24" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 7.5 19 4l3 15.5L7 22Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M4 7.5 22 19.5" stroke="currentColor" stroke-width="1" stroke-dasharray="1.5 2.2"/><circle cx="19" cy="4" r="2.6" fill="#1351b4"/></svg>Geo-Fundiário</a>
+    <nav class="nav__links" aria-label="Principal">
+      <div class="nav__item"><a class="nav__link" href="#sistema">Sistema</a></div>
+      <div class="nav__item"><a class="nav__link" href="#pecas">Peças</a></div>
+      <div class="nav__item"><a class="nav__link" href="#diagnostico">Diagnóstico</a></div>
+      <div class="nav__item"><a class="nav__link" href="#faq">Perguntas</a></div>
+    </nav>
+    <div class="nav__actions">
+      <a class="nav__link" href="entrar/">Entrar</a>
+      <a class="btn btn--primary" href="painel/">Abrir a demonstração</a>
+    </div>
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Menu">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero hero--centred" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text">
+      <div class="hero__c">
+        <a class="pill" href="https://github.com/darlanmnunes/geo-fundiario/releases/tag/v0.3.0"><span>Versão 0.3.0</span><span class="muted">Ler as notas da versão</span></a>
+        <h1 id="hero-h">Gestão fundiária para prefeituras</h1>
+        <p class="hero__lead">O Geo-Fundiário leva cada núcleo urbano do levantamento de campo ao registro: cadastro, mapa, memorial, planta e as 10 fases da REURB.</p>
+        <div class="btn-row"><a class="btn btn--primary" href="painel/">Abrir a demonstração</a><a class="btn btn--secondary" href="https://github.com/darlanmnunes/geo-fundiario">Ver o código</a></div>
+      </div>
+      <div class="hero__window" data-fx="grain-gradient" data-fx-seed="7" role="img" aria-label="Painel do Geo-Fundiário: indicadores, mapa dos três núcleos e unidades por situação">
+        <div class="ly-piece gf-win" aria-hidden="true">
+          <div class="gf-win__bar"><span class="gf-win__dots"><i></i><i></i><i></i></span><span class="gf-win__url">Visão geral</span></div>
+          <div class="gf-rolo"><img src="apresentacao/painel-longo.jpg" alt="" width="1345" height="1840" fetchpriority="high" data-source="client" data-subject="tela Visão geral do sistema"></div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <section class="section" id="sistema" aria-labelledby="sistema-h">
+    <div class="wrap">
+      <div class="grid">
+        <h2 class="span-5" id="sistema-h">Cada núcleo em uma tela</h2>
+        <div class="span-6 start-7 stack-4">
+          <p class="muted">À esquerda, as fases do processo com datas e prazos. No centro, o mapa com cada unidade na cor da sua situação. À direita, o que falta resolver.</p>
+          <a class="link" href="projetos/1/">Abrir o núcleo Vila Esperança</a>
+        </div>
+      </div>
+      <div class="ui app fill" role="img" aria-label="Tela do núcleo Vila Esperança: trilha das fases, mapa das unidades por situação e pendências">
+        <div class="gf-win__bar"><span class="gf-win__dots"><i></i><i></i><i></i></span><span class="gf-win__url">Núcleo Vila Esperança</span></div>
+        <div class="app__pane"><img src="apresentacao/fases.jpg" alt="" width="1360" height="850" loading="lazy" data-source="client" data-subject="tela do núcleo, com fases, mapa e pendências"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pecas" style="--hm: 2" aria-labelledby="pecas-h">
+    <div class="wrap">
+      <div class="grid grid--top">
+        <div class="span-5">
+          <div class="section-head">
+            <h2 id="pecas-h">Peças técnicas geradas dos vértices</h2>
+            <p class="muted">Quatro tarefas que costumam pedir planilha, CAD e editor de texto.</p>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Tarefas">
+            <button class="tab" role="tab" id="aba-1" aria-selected="true" aria-controls="painel-1 tela-1">Gerar o memorial</button>
+            <button class="tab" role="tab" id="aba-2" aria-selected="false" aria-controls="painel-2 tela-2" tabindex="-1">Emitir a planta</button>
+            <button class="tab" role="tab" id="aba-3" aria-selected="false" aria-controls="painel-3 tela-3" tabindex="-1">Conferir a precisão</button>
+            <button class="tab" role="tab" id="aba-4" aria-selected="false" aria-controls="painel-4 tela-4" tabindex="-1">Cadastrar ocupantes</button>
+          </div>
+          <div role="tabpanel" id="painel-1" aria-labelledby="aba-1">
+            <p>O memorial descritivo sai dos vértices medidos, com azimutes, distâncias e confrontantes. Baixe em DOCX para revisar e assinar.</p>
+            <a class="link" href="projetos/1/lotes/Q01-L01/">Ver a ficha de uma unidade</a>
+          </div>
+          <div role="tabpanel" id="painel-2" aria-labelledby="aba-2" hidden>
+            <p>A planta sai em folha A3, com malha de coordenadas, convenções e selo. Exporte também em DXF e GeoPackage.</p>
+            <a class="link" href="projetos/1/lotes/Q01-L01/#planta">Ver a planta de uma unidade</a>
+          </div>
+          <div role="tabpanel" id="painel-3" aria-labelledby="aba-3" hidden>
+            <p>Cada vértice é comparado com a tolerância da norma do projeto: 8 cm na REURB. A lista mostra o que precisa ser medido de novo.</p>
+            <a class="link" href="projetos/1/levantamento/">Ver o controle do levantamento</a>
+          </div>
+          <div role="tabpanel" id="painel-4" aria-labelledby="aba-4" hidden>
+            <p>Ocupante, renda, família e documentos que faltam ficam na linha da unidade. O CPF aparece mascarado.</p>
+            <a class="link" href="projetos/1/lotes/">Ver o cadastro do núcleo</a>
+          </div>
+        </div>
+        <div class="frame frame--split frame--lit span-6 start-7">
+          <div class="stage stage--fade-br">
+            <div class="gf-shot gf-win" id="tela-1"><img src="apresentacao/memorial.jpg" alt="Memorial descritivo de uma unidade, com vértices, azimutes e distâncias" width="1312" height="674" loading="lazy" data-source="client" data-subject="memorial descritivo gerado pelo sistema"></div>
+            <div class="gf-shot gf-win" id="tela-2" hidden><img src="apresentacao/planta.jpg" alt="Planta de uma unidade em folha A3, com malha de coordenadas e selo" width="1312" height="1028" loading="lazy" data-source="client" data-subject="planta da unidade em A3"></div>
+            <div class="gf-shot gf-win" id="tela-3" hidden><img src="apresentacao/levantamento.jpg" alt="Controle de qualidade do levantamento, com o erro posicional de cada vértice" width="1360" height="850" loading="lazy" data-source="client" data-subject="tela de levantamento"></div>
+            <div class="gf-shot gf-win" id="tela-4" hidden><img src="apresentacao/cadastro.jpg" alt="Cadastro das unidades e dos ocupantes de um núcleo" width="1360" height="850" loading="lazy" data-source="client" data-subject="tela de cadastro"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section statement" id="principios" data-moment="word-highlight" aria-label="Como o banco é modelado">
+    <div class="wrap">
+      <p class="t-label">O banco de dados</p>
+      <p class="mo-wh__text">O cadastro segue o modelo da <strong>ISO 19152</strong> (LADM). A geometria fica georreferenciada ao Sistema Geodésico Brasileiro (SGB) - SIRGAS 2000, nada é sobrescrito, e cada alteração guarda o autor, a data e o valor anterior.</p>
+    </div>
+  </section>
+
+  <section class="section ground-inverse" id="diagnostico" data-moment="iris-opens" data-moment-opts='{"from": "base"}' aria-labelledby="diagnostico-h">
+    <div class="wrap">
+      <div class="grid grid--top">
+        <div class="span-5 stack-5">
+          <h2 id="diagnostico-h">Diagnóstico territorial em 11 fontes oficiais</h2>
+          <p class="t-lead">Escolha um núcleo ou importe um polígono. O sistema consulta as bases públicas na hora e mede sobreposições e distâncias.</p>
+          <ul class="gf-fatos">
+            <li>Cada achado traz a base legal e a fonte.</li>
+            <li>As feições encontradas aparecem no mapa.</li>
+            <li>O resultado gravado alimenta o dossiê do núcleo.</li>
+          </ul>
+          <a class="link" href="diagnostico/">Ver as fontes do diagnóstico</a>
+        </div>
+        <div class="frame frame--split span-6 start-7" data-visual>
+          <div class="dg" data-diagram><script type="application/json">{"layout": "fanin", "ground": "dots", "alt": "Oito das bases consultadas, do IBGE ao IPHAN, chegam ao diagnóstico, que alimenta o dossiê do núcleo.", "sources": [{"label": "IBGE", "icon": "ui:users", "sub": "Setores e Censo"}, {"label": "ANA", "icon": "ui:droplets", "sub": "Cursos d'água"}, {"label": "SGB", "icon": "ui:mountain", "sub": "Risco geológico"}, {"label": "SICAR", "icon": "ui:tractor", "sub": "Imóveis rurais"}, {"label": "ICMBio", "icon": "ui:trees", "sub": "Conservação"}, {"label": "FUNAI", "icon": "ui:map-pinned", "sub": "Terras indígenas"}, {"label": "ANM", "icon": "ui:pickaxe", "sub": "Mineração"}, {"label": "IPHAN", "icon": "ui:landmark", "sub": "Bens tombados"}], "target": {"label": "Diagnóstico", "icon": "ui:scan-search"}, "then": {"label": "Dossiê do núcleo", "icon": "ui:file-check", "meta": "com fonte"}}</script></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq" aria-labelledby="perguntas-h">
+    <div class="wrap">
+      <div class="grid grid--top">
+        <div class="span-5 stack-4">
+          <h2 id="perguntas-h">Perguntas</h2>
+          <p class="muted">O que prefeituras e equipes técnicas costumam querer saber antes de testar.</p>
+          <a class="link" href="https://github.com/darlanmnunes/geo-fundiario#readme">Ler a documentação</a>
+          <img class="gf-grupo" src="marca/gpgeoia.png" alt="Logotipo do GPGeoIA, Grupo de Pesquisa em Inteligência Artificial Geoespacial da UFV" width="363" height="456" loading="lazy" data-source="client" data-subject="logotipo do grupo de pesquisa">
+        </div>
+        <div class="faq span-6 start-7">
+          <div class="faq__item"><h3>Os dados da demonstração são reais?</h3><p>Não. Os 3 núcleos são fictícios, desenhados sobre edificações do campus da UFV, e nenhuma pessoa citada existe.</p></div>
+          <div class="faq__item"><h3>Onde ficam os dados do município?</h3><p>No servidor que o município escolher. O sistema roda em PostgreSQL com PostGIS e não depende de serviço pago.</p></div>
+          <div class="faq__item"><h3>Serve para área rural?</h3><p>Ainda não. O primeiro módulo é a regularização urbana da Lei 13.465/2017; a rural está planejada.</p></div>
+          <div class="faq__item"><h3>Quem desenvolve?</h3><p>O GPGeoIA, grupo de pesquisa da Universidade Federal de Viçosa, sob responsabilidade do Prof. Dr. Darlan Miranda Nunes.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer closing" id="contact" aria-labelledby="close-h">
+  <div class="wrap">
+    <div class="closing__cta close--type">
+      <div class="section-head">
+        <h2 id="close-h">Percorra um núcleo na demonstração</h2>
+        <p>Somente leitura, com dados fictícios. Não pede cadastro.</p>
+      </div>
+      <a class="btn btn--primary btn--xl btn--wide" href="painel/">Abrir a demonstração<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+    </div>
+    <div class="closing__links">
+      <div class="grid">
+        <div class="span-4 stack-4">
+          <a class="nav__logo" href="#top"><svg width="24" height="24" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 7.5 19 4l3 15.5L7 22Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M4 7.5 22 19.5" stroke="currentColor" stroke-width="1" stroke-dasharray="1.5 2.2"/><circle cx="19" cy="4" r="2.6" fill="#1351b4"/></svg>Geo-Fundiário</a>
+          <p class="footer__lede">Sistema para Gestão fundiária e territorial.</p>
+        </div>
+        <div class="span-2 footer__col"><h3>Sistema</h3><ul><li><a href="#sistema">O núcleo em uma tela</a></li><li><a href="inteligencia/">Inteligência territorial</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Peças</h3><ul><li><a href="#pecas">Memorial e planta</a></li><li><a href="legislacao/">Base legal</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Diagnóstico</h3><ul><li><a href="#diagnostico">Fontes oficiais</a></li><li><a href="ajuda/">Ajuda do sistema</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Projeto</h3><ul><li><a href="#faq">Perguntas</a></li><li><a href="http://dgp.cnpq.br/dgp/espelhogrupo/833723">GPGeoIA no CNPq</a></li></ul></div>
+      </div>
+      <div class="footer__legal">
+        <span>&copy; 2026 GPGeoIA, Universidade Federal de Viçosa, <a href="https://github.com/darlanmnunes/geo-fundiario/blob/main/LICENSE">Licença AGPL-3.0</a></span>
+        <div class="socials"></div>
+        <span class="credits">Mapas: OpenStreetMap, OpenFreeMap e Esri</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<nav class="actionbar" aria-label="Ação principal">
+  <a class="btn btn--primary" href="painel/">Abrir a demonstração</a>
+</nav>
+
+<script type="module" src="assets/system.js"></script>
+<script type="module" src="assets/motion/motion.js"></script>
+<script type="module" src="assets/layout/layout.js"></script>
+<script type="module" src="assets/diagrams/mount.js"></script>
+</body>
+</html>

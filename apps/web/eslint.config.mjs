@@ -13,6 +13,8 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "public/maplibre/**",
+    // Página de apresentação: arquivos estáticos de terceiros, servidos como estão.
+    "public/assets/**",
   ]),
 ]);
 
