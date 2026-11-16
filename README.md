@@ -171,9 +171,13 @@ Para gerar o site localmente: `NEXT_OUTPUT=export NEXT_BASE_PATH=/<nome-do-repo>
 
 ## Autoria
 
-Desenvolvido pelo **GPGeoIA - Grupo de Pesquisa em Inteligência Artificial Geoespacial** da Universidade Federal de Viçosa (UFV).
+<a href="http://dgp.cnpq.br/dgp/espelhogrupo/833723"><img src="apps/web/public/marca/gpgeoia.png" alt="GPGeoIA" width="84" align="left"></a>
+
+Desenvolvido pelo **[GPGeoIA - Grupo de Pesquisa em Inteligência Artificial Geoespacial](http://dgp.cnpq.br/dgp/espelhogrupo/833723)** da Universidade Federal de Viçosa (UFV), registrado no Diretório dos Grupos de Pesquisa do CNPq.
 
 Responsável: Prof. Dr. Darlan Miranda Nunes.
+
+<br clear="left">
 
 ## Licença
 

@@ -136,6 +136,29 @@ def eu(usuario: Usuario | None = exigir("leitor")):
     return usuario
 
 
+class TrocaDeSenha(BaseModel):
+    senha_atual: str = Field(min_length=1, max_length=200)
+    senha_nova: str = Field(min_length=1, max_length=200)
+
+
+@router.post("/auth/senha", status_code=204)
+def trocar_senha(corpo: TrocaDeSenha, credencial: HTTPAuthorizationCredentials | None = Depends(_portador)):  # noqa: B008
+    """A própria pessoa troca a senha. Encerra as outras sessões dela; a atual continua."""
+    usuario = usuario_da_sessao(credencial.credentials) if credencial else None
+    if usuario is None:
+        raise HTTPException(401, "Entre no sistema para continuar", headers={"WWW-Authenticate": "Bearer"})
+    guardado = consulta("select senha_hash from acesso.usuario where id = %s", usuario.id)[0]["senha_hash"]
+    if not conferir_senha(corpo.senha_atual, guardado):
+        raise HTTPException(403, "A senha atual não confere")
+    validar_senha(corpo.senha_nova)
+    with pool.connection() as conn:
+        conn.execute("update acesso.usuario set senha_hash = %s where id = %s", (gerar_hash(corpo.senha_nova), usuario.id))
+        conn.execute(
+            "delete from acesso.sessao where usuario_id = %s and token_sha256 <> %s",
+            (usuario.id, hashlib.sha256(credencial.credentials.encode()).hexdigest()),
+        )
+
+
 class NovoUsuario(BaseModel):
     nome: str = Field(min_length=3, max_length=120)
     email: EmailStr

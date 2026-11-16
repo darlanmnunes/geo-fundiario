@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import clsx from "clsx";
-import { CircleHelp, LogIn, Search, Sparkles, UserRound } from "lucide-react";
-import { useSessao } from "@/lib/sessao";
+import { ChevronDown, CircleHelp, KeyRound, LogIn, LogOut, Search, Sparkles, UserRound, Users } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { sair, useSessao } from "@/lib/sessao";
 
 interface Props {
   projetos: { id: number; nome: string }[];
@@ -22,6 +23,44 @@ function Marca() {
       </svg>
       <span className="text-[17px] leading-none font-bold whitespace-nowrap text-white">Geo-Fundiário</span>
     </Link>
+  );
+}
+
+const PERFIL = { administrador: "Administrador", editor: "Editor", leitor: "Leitor" };
+
+function MenuConta({ nome, email, perfil }: { nome: string; email: string; perfil: keyof typeof PERFIL }) {
+  const router = useRouter();
+  const [aberto, setAberto] = useState(false);
+  const caixa = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!aberto) return;
+    const fora = (e: MouseEvent) => { if (!caixa.current?.contains(e.target as Node)) setAberto(false); };
+    const tecla = (e: KeyboardEvent) => { if (e.key === "Escape") setAberto(false); };
+    document.addEventListener("mousedown", fora);
+    document.addEventListener("keydown", tecla);
+    return () => { document.removeEventListener("mousedown", fora); document.removeEventListener("keydown", tecla); };
+  }, [aberto]);
+  const linha = "flex w-full items-center gap-2 px-3 py-2 text-left text-[13.5px] text-texto hover:bg-realce";
+  return (
+    <div ref={caixa} className="relative shrink-0">
+      <button type="button" aria-haspopup="menu" aria-expanded={aberto} onClick={() => setAberto((v) => !v)} className="flex h-8 items-center gap-1.5 rounded border border-white/25 px-2.5 text-[13px] text-white hover:bg-white/10">
+        <UserRound className="size-4" aria-hidden />
+        <span className="hidden max-w-28 truncate sm:inline">{nome.split(" ")[0]}</span>
+        <ChevronDown className="size-3.5 opacity-80" aria-hidden />
+      </button>
+      {aberto && (
+        <div role="menu" className="absolute right-0 top-10 z-50 w-64 overflow-hidden rounded border border-borda bg-superficie shadow-[0_6px_20px_rgb(27_36_48/0.22)]">
+          <div className="border-b border-borda px-3 py-2.5">
+            <p className="truncate text-[14px] font-semibold text-texto">{nome}</p>
+            <p className="truncate text-[12.5px] text-texto-3">{email}</p>
+            <p className="mt-0.5 text-[12.5px] text-texto-2">Perfil: {PERFIL[perfil]}</p>
+          </div>
+          {perfil === "administrador" && <Link role="menuitem" href="/admin/usuarios" onClick={() => setAberto(false)} className={linha}><Users className="size-4 text-texto-3" aria-hidden /> Usuários</Link>}
+          <Link role="menuitem" href="/entrar" onClick={() => setAberto(false)} className={linha}><KeyRound className="size-4 text-texto-3" aria-hidden /> Minha conta e senha</Link>
+          <button role="menuitem" type="button" onClick={async () => { setAberto(false); await sair(); router.push("/"); }} className={clsx(linha, "border-t border-borda")}><LogOut className="size-4 text-texto-3" aria-hidden /> Sair</button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -82,10 +121,11 @@ export function BarraSuperior({ projetos }: Props) {
         <Link href="/ajuda" aria-current={caminho.startsWith("/ajuda") ? "page" : undefined} className={clsx("flex h-8 shrink-0 items-center gap-1.5 rounded px-2 text-[13px] hover:bg-white/10", caminho.startsWith("/ajuda") ? "bg-white/15 text-white" : "text-white/85")}>
           <CircleHelp className="size-4" aria-hidden /> <span className="hidden md:inline">Ajuda</span>
         </Link>
-        <Link href={sessao?.usuario.perfil === "administrador" ? "/admin/usuarios" : "/entrar"} className="flex h-8 shrink-0 items-center gap-1.5 rounded border border-white/25 px-2.5 text-[13px] text-white hover:bg-white/10" title={sessao ? `${sessao.usuario.nome} (${sessao.usuario.perfil})` : "Entrar para inserir e corrigir dados"}>
-          {sessao ? <UserRound className="size-4" aria-hidden /> : <LogIn className="size-4" aria-hidden />}
-          <span className="hidden max-w-28 truncate sm:inline">{sessao ? sessao.usuario.nome.split(" ")[0] : "Entrar"}</span>
-        </Link>
+        {sessao ? <MenuConta nome={sessao.usuario.nome} email={sessao.usuario.email} perfil={sessao.usuario.perfil} /> : (
+          <Link href="/entrar" className="flex h-8 shrink-0 items-center gap-1.5 rounded border border-white/25 px-2.5 text-[13px] text-white hover:bg-white/10" title="Entrar para inserir e corrigir dados">
+            <LogIn className="size-4" aria-hidden /> <span className="hidden sm:inline">Entrar</span>
+          </Link>
+        )}
       </div>
     </header>
   );

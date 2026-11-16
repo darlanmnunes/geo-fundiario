@@ -211,4 +211,5 @@ export const fmt = {
 
 export const REPOSITORIO = "https://github.com/darlanmnunes/geo-fundiario";
 /** Endereço do site do GPGeoIA. Enquanto for null, o logotipo no rodapé aparece sem link. */
-export const SITE_GRUPO: string | null = null;
+// Espelho do grupo no Diretório dos Grupos de Pesquisa do CNPq, enquanto o grupo não tem site próprio.
+export const SITE_GRUPO: string | null = "http://dgp.cnpq.br/dgp/espelhogrupo/833723";

@@ -74,3 +74,4 @@ export async function sair() {
   await api("/auth/sair", { metodo: "POST" }).catch(() => undefined);
   gravar(null);
 }
+export const trocarSenha = (senha_atual: string, senha_nova: string) => api<void>("/auth/senha", { corpo: { senha_atual, senha_nova } });
