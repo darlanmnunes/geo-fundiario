@@ -22,7 +22,7 @@
   <a href="https://github.com/darlanmnunes/geo-fundiario/actions/workflows/pages.yml"><img alt="Demonstração" src="https://github.com/darlanmnunes/geo-fundiario/actions/workflows/pages.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="Licença AGPL-3.0-or-later" src="https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0--or--later-1351b4"></a>
   <img alt="Modelo LADM ISO 19152" src="https://img.shields.io/badge/modelo-LADM%20ISO%2019152-0b2f66">
-  <img alt="SIRGAS 2000" src="https://img.shields.io/badge/refer%C3%AAncia-SIRGAS%202000-0b2f66">
+  <img alt="Sistema de referência SIRGAS 2000" src="https://img.shields.io/badge/sistema%20de%20refer%C3%AAncia-SIRGAS%202000-0b2f66">
 </p>
 
 <p align="center">
