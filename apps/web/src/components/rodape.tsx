@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { fmt, REPOSITORIO, SITE_GRUPO } from "@/lib/dominio";
 
 function Marca({ href, children }: { href: string | null; children: ReactNode }) {
-  return href ? <a href={href} target="_blank" rel="noreferrer">{children}</a> : <>{children}</>;
+  return href ? <a href={href} target="_blank" rel="noreferrer" className="shrink-0">{children}</a> : <>{children}</>;
 }
 
 export function Rodape({ origem }: { origem: { viaApi: boolean; ultimaAlteracao: string | null } }) {
@@ -14,7 +14,7 @@ export function Rodape({ origem }: { origem: { viaApi: boolean; ultimaAlteracao:
           {/* Quando o grupo tiver site, envolver o logotipo e o nome num link (SITE_GRUPO em lib/dominio.ts). */}
           <Marca href={SITE_GRUPO}>
             {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática pequena; o site é exportado sem otimizador */}
-            <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/marca/gpgeoia.png`} alt="Logotipo do GPGeoIA" width={76} height={96} className="h-24 w-auto shrink-0" />
+            <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/marca/gpgeoia.svg`} alt="Logotipo do GPGeoIA" width={74} height={96} className="h-24 w-auto max-w-none shrink-0" />
           </Marca>
           <div className="min-w-0">
             <p className="font-semibold text-texto">Geo-Fundiário</p>
